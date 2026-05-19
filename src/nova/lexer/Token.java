@@ -1,4 +1,9 @@
 package nova.lexer;
 
-public class Token {
+public record Token(TokenType type, String lexeme) {
+
+    @Override
+    public String toString() {
+        return type + " -> " + lexeme;
+    }
 }
