@@ -11,12 +11,12 @@ public class DefaultKeyword {
         string(registry);
         charType(registry);
         booleanType(registry);
+        booleanLiteral(registry);
         integer(registry);
         doubleType(registry);
         floatType(registry);
         voidType(registry);
         nullType(registry);
-        function(registry);
         mut(registry);
         constType(registry);
         ifType(registry);
@@ -32,6 +32,7 @@ public class DefaultKeyword {
         minus(registry);
         star(registry);
         slash(registry);
+        percentage(registry);
         equal(registry);
         notEqual(registry);
         greaterThan(registry);
@@ -51,10 +52,12 @@ public class DefaultKeyword {
         comma(registry);
         dot(registry);
         colon(registry);
+        arrow(registry);
     }
 
     /**
      * Biến tự suy luận
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void identifier(KeywordRegistry registry) {
@@ -72,108 +75,173 @@ public class DefaultKeyword {
 
     /**
      * Kiểu dữ liệu chuỗi
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void string(KeywordRegistry registry) {
         registry.registry(
                 "string",
                 EN,
-                TokenType.STRING
+                TokenType.TYPE_STRING
         );
         registry.registry(
                 "chuỗi",
                 VI,
-                TokenType.STRING
+                TokenType.TYPE_STRING
         );
     }
 
     /**
      * Kiểu dữ liệu ký tự
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void charType(KeywordRegistry registry) {
         registry.registry(
                 "char",
                 EN,
-                TokenType.CHAR
+                TokenType.TYPE_CHAR
         );
         registry.registry(
                 "ký_tự",
                 VI,
-                TokenType.CHAR
+                TokenType.TYPE_CHAR
         );
     }
 
     /**
      * Kiểu dữ liệu logic (đúng/sai)
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void booleanType(KeywordRegistry registry) {
         registry.registry(
                 "boolean",
                 EN,
-                TokenType.BOOLEAN
+                TokenType.TYPE_BOOLEAN
         );
         registry.registry(
-                "boolean",
+                "logic",
                 VI,
-                TokenType.BOOLEAN
+                TokenType.TYPE_BOOLEAN
+        );
+    }
+
+    /**
+     * Hằng số logic (đúng/sai)
+     *
+     * @param registry object lưu trữ từ khóa và token của nó
+     */
+    private static void booleanLiteral(KeywordRegistry registry) {
+        registry.registry(
+                "true",
+                EN,
+                TokenType.LITERAL_BOOLEAN
+        );
+        registry.registry(
+                "false",
+                EN,
+                TokenType.LITERAL_BOOLEAN
+        );
+        registry.registry(
+                "đúng",
+                VI,
+                TokenType.LITERAL_BOOLEAN
+        );
+        registry.registry(
+                "sai",
+                VI,
+                TokenType.LITERAL_BOOLEAN
         );
     }
 
     /**
      * Kiểu dữ liệu số nguyên
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void integer(KeywordRegistry registry) {
         registry.registry(
                 "int",
                 EN,
-                TokenType.INTEGER
+                TokenType.TYPE_INTEGER
+        );
+        registry.registry(
+                "int16",
+                EN,
+                TokenType.TYPE_INTEGER
+        );
+        registry.registry(
+                "int32",
+                EN,
+                TokenType.TYPE_INTEGER
+        );
+        registry.registry(
+                "int64",
+                EN,
+                TokenType.TYPE_INTEGER
         );
         registry.registry(
                 "số_nguyên",
                 VI,
-                TokenType.INTEGER
+                TokenType.TYPE_INTEGER
+        );
+        registry.registry(
+                "số_nguyên_16",
+                VI,
+                TokenType.TYPE_INTEGER
+        );
+        registry.registry(
+                "số_nguyên_32",
+                VI,
+                TokenType.TYPE_INTEGER
+        );
+        registry.registry(
+                "số_nguyên_64",
+                VI,
+                TokenType.TYPE_INTEGER
         );
     }
 
     /**
      * Kiểu dữ liệu số thực kép
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void doubleType(KeywordRegistry registry) {
         registry.registry(
                 "double",
                 EN,
-                TokenType.DOUBLE
+                TokenType.TYPE_DOUBLE
         );
         registry.registry(
                 "số_thực_kép",
                 VI,
-                TokenType.DOUBLE
+                TokenType.TYPE_DOUBLE
         );
     }
 
     /**
      * Kiểu dữ liệu số thực đơn
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void floatType(KeywordRegistry registry) {
         registry.registry(
                 "float",
                 EN,
-                TokenType.FLOAT
+                TokenType.TYPE_FLOAT
         );
         registry.registry(
                 "số_thực_đơn",
                 VI,
-                TokenType.FLOAT
+                TokenType.TYPE_FLOAT
         );
     }
 
     /**
      * Kiểu rỗng (trống)
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void voidType(KeywordRegistry registry) {
@@ -191,6 +259,7 @@ public class DefaultKeyword {
 
     /**
      * Giá trị rỗng (null)
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void nullType(KeywordRegistry registry) {
@@ -200,31 +269,15 @@ public class DefaultKeyword {
                 TokenType.NULL
         );
         registry.registry(
-                "rỗng",
+                "k_tồn_tại",
                 VI,
                 TokenType.NULL
         );
     }
 
     /**
-     * Khai báo hàm
-     * @param registry object lưu trữ từ khóa và token của nó
-     */
-    private static void function(KeywordRegistry registry) {
-        registry.registry(
-                "function",
-                EN,
-                TokenType.FUNCTION
-        );
-        registry.registry(
-                "hàm",
-                VI,
-                TokenType.FUNCTION
-        );
-    }
-
-    /**
      * Từ khóa khai báo biến khả biến
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void mut(KeywordRegistry registry) {
@@ -242,6 +295,7 @@ public class DefaultKeyword {
 
     /**
      * Từ khóa khai báo hằng số
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void constType(KeywordRegistry registry) {
@@ -259,6 +313,7 @@ public class DefaultKeyword {
 
     /**
      * Cấu trúc điều kiện nếu
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void ifType(KeywordRegistry registry) {
@@ -276,6 +331,7 @@ public class DefaultKeyword {
 
     /**
      * Cấu trúc điều kiện thì
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void thenType(KeywordRegistry registry) {
@@ -293,6 +349,7 @@ public class DefaultKeyword {
 
     /**
      * Cấu trúc điều kiện khác
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void elseType(KeywordRegistry registry) {
@@ -306,10 +363,16 @@ public class DefaultKeyword {
                 VI,
                 TokenType.ELSE
         );
+        registry.registry(
+                "không_thì",
+                VI,
+                TokenType.ELSE
+        );
     }
 
     /**
      * Cấu trúc điều kiện hoặc không
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void orNot(KeywordRegistry registry) {
@@ -327,6 +390,7 @@ public class DefaultKeyword {
 
     /**
      * Cấu trúc rẽ nhánh
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void switchType(KeywordRegistry registry) {
@@ -344,6 +408,7 @@ public class DefaultKeyword {
 
     /**
      * Vòng lặp
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void loop(KeywordRegistry registry) {
@@ -361,6 +426,7 @@ public class DefaultKeyword {
 
     /**
      * Vòng lặp cho
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void forType(KeywordRegistry registry) {
@@ -378,6 +444,7 @@ public class DefaultKeyword {
 
     /**
      * Từ khóa sử dụng trong vòng for, dùng để chỉ định danh sách được duyệt
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void of(KeywordRegistry registry) {
@@ -395,6 +462,7 @@ public class DefaultKeyword {
 
     /**
      * Phép gán
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void assign(KeywordRegistry registry) {
@@ -412,6 +480,7 @@ public class DefaultKeyword {
 
     /**
      * Phép cộng
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void plus(KeywordRegistry registry) {
@@ -429,6 +498,7 @@ public class DefaultKeyword {
 
     /**
      * Phép trừ
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void minus(KeywordRegistry registry) {
@@ -446,6 +516,7 @@ public class DefaultKeyword {
 
     /**
      * Phép nhân
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void star(KeywordRegistry registry) {
@@ -463,6 +534,7 @@ public class DefaultKeyword {
 
     /**
      * Phép chia
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void slash(KeywordRegistry registry) {
@@ -479,7 +551,26 @@ public class DefaultKeyword {
     }
 
     /**
+     * Phép chia lấy dư
+     *
+     * @param registry object lưu trữ từ khóa và token của nó
+     */
+    private static void percentage(KeywordRegistry registry) {
+        registry.registry(
+                "%",
+                EN,
+                TokenType.PERCENTAGE
+        );
+        registry.registry(
+                "%",
+                VI,
+                TokenType.PERCENTAGE
+        );
+    }
+
+    /**
      * Phép so sánh bằng
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void equal(KeywordRegistry registry) {
@@ -497,6 +588,7 @@ public class DefaultKeyword {
 
     /**
      * Phép so sánh không bằng
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void notEqual(KeywordRegistry registry) {
@@ -514,6 +606,7 @@ public class DefaultKeyword {
 
     /**
      * Phép so sánh lớn hơn
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void greaterThan(KeywordRegistry registry) {
@@ -531,6 +624,7 @@ public class DefaultKeyword {
 
     /**
      * Phép so sánh lớn hơn hoặc bằng
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void greaterThanEqual(KeywordRegistry registry) {
@@ -548,6 +642,7 @@ public class DefaultKeyword {
 
     /**
      * Phép so sánh nhỏ hơn
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void lessThan(KeywordRegistry registry) {
@@ -565,6 +660,7 @@ public class DefaultKeyword {
 
     /**
      * Phép so sánh nhỏ hơn hoặc bằng
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void lessThanEqual(KeywordRegistry registry) {
@@ -582,6 +678,7 @@ public class DefaultKeyword {
 
     /**
      * Phép toán logic VÀ
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void and(KeywordRegistry registry) {
@@ -599,6 +696,7 @@ public class DefaultKeyword {
 
     /**
      * Phép toán logic HOẶC
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void or(KeywordRegistry registry) {
@@ -616,6 +714,7 @@ public class DefaultKeyword {
 
     /**
      * Phép toán logic PHỦ ĐỊNH
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void not(KeywordRegistry registry) {
@@ -633,23 +732,25 @@ public class DefaultKeyword {
 
     /**
      * Dấu gạch ngang
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void hyphen(KeywordRegistry registry) {
         registry.registry(
                 "-",
                 EN,
-                TokenType.Hyphen
+                TokenType.ARROW
         );
         registry.registry(
                 "-",
                 VI,
-                TokenType.Hyphen
+                TokenType.ARROW
         );
     }
 
     /**
      * Dấu mở ngoặc đơn
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void leftParen(KeywordRegistry registry) {
@@ -667,6 +768,7 @@ public class DefaultKeyword {
 
     /**
      * Dấu đóng ngoặc đơn
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void rightParen(KeywordRegistry registry) {
@@ -684,6 +786,7 @@ public class DefaultKeyword {
 
     /**
      * Dấu mở ngoặc nhọn
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void leftRace(KeywordRegistry registry) {
@@ -701,6 +804,7 @@ public class DefaultKeyword {
 
     /**
      * Dấu đóng ngoặc nhọn
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void rightRace(KeywordRegistry registry) {
@@ -718,6 +822,7 @@ public class DefaultKeyword {
 
     /**
      * Dấu mở ngoặc vuông
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void leftBracket(KeywordRegistry registry) {
@@ -735,6 +840,7 @@ public class DefaultKeyword {
 
     /**
      * Dấu đóng ngoặc vuông
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void rightBracket(KeywordRegistry registry) {
@@ -752,6 +858,7 @@ public class DefaultKeyword {
 
     /**
      * Dấu phẩy
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void comma(KeywordRegistry registry) {
@@ -769,6 +876,7 @@ public class DefaultKeyword {
 
     /**
      * Dấu chấm
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void dot(KeywordRegistry registry) {
@@ -786,6 +894,7 @@ public class DefaultKeyword {
 
     /**
      * Dấu hai chấm
+     *
      * @param registry object lưu trữ từ khóa và token của nó
      */
     private static void colon(KeywordRegistry registry) {
@@ -798,6 +907,24 @@ public class DefaultKeyword {
                 ":",
                 VI,
                 TokenType.COLON
+        );
+    }
+
+    /**
+     * Dấu mũi tên
+     *
+     * @param registry object lưu trữ từ khóa và token của nó
+     */
+    private static void arrow(KeywordRegistry registry) {
+        registry.registry(
+                "->",
+                EN,
+                TokenType.ARROW
+        );
+        registry.registry(
+                "->",
+                VI,
+                TokenType.ARROW
         );
     }
 }

@@ -6,25 +6,40 @@ public enum TokenType {
     IDENTIFIER,
 
     // <editor-fold> desc="Chuỗi"
-    STRING,
-    CHAR,
+    TYPE_STRING,
+    TYPE_CHAR,
     // </editor-fold>
 
     // Đúng/Sai
-    BOOLEAN,
+    TYPE_BOOLEAN,
 
     // <editor-fold> desc="Số"
-    INTEGER,
-    DOUBLE,
-    FLOAT,
+    TYPE_INTEGER,
+    TYPE_DOUBLE,
+    TYPE_FLOAT,
     // </editor-fold>
 
     VOID, // Trống
     NULL,
     // </editor-fold>
 
+    // <editor-fold> desc="Gia tri (Literal)"
+    // <editor-fold> desc="Chuỗi"
+    LITERAL_STRING,
+    LITERAL_CHAR,
+    // </editor-fold>
+
+    // Đúng/Sai
+    LITERAL_BOOLEAN,
+
+    // <editor-fold> desc="Số"
+    LITERAL_INTEGER,
+    LITERAL_DOUBLE,
+    LITERAL_FLOAT,
+    // </editor-fold>
+    // </editor-fold>
+
     // <editor-fold> desc="==================== Keyword ===================="
-    FUNCTION, // Hàm
     VAR, // Kiểu dữ liệu tự suy luận
     MUT, // Mutable
     CONST, // Hằng số
@@ -51,6 +66,7 @@ public enum TokenType {
     MINUS, // Dấu trừ
     STAR, // Dấu nhân
     SLASH, // Dấu chia
+    PERCENTAGE, // Dấu chia lấy dư
 
     EQUAL, // ==
     NOT_EQUAL, // !=
@@ -64,7 +80,7 @@ public enum TokenType {
     OR, // |
 
     NOT, // !
-    Hyphen, // -
+    ARROW, // ->
     // </editor-fold>
 
     // <editor-fold> desc="==================== Delimiters ===================="
@@ -79,8 +95,8 @@ public enum TokenType {
     // </editor-fold>
 
     // <editor-fold> desc="[]"
-    LEFT_BRACKET, // {
-    RIGHT_BRACKET, // }
+    LEFT_BRACKET, // [
+    RIGHT_BRACKET, // ]
     // </editor-fold>
     // </editor-fold>
 
@@ -88,5 +104,8 @@ public enum TokenType {
     COMMA, // Dấu phẩy
     DOT, // Dấu chấm
     COLON, // Dấu 2 chấm
+    SEMICOLON, // Dấu chấm phẩy
+
+    EOF,
     // </editor-fold>
 }
