@@ -25,3 +25,6 @@ Dưới đây là chi tiết các phần đặc tả ngôn ngữ CPL được ch
 - [⚡ **Phần VI: Toán tử (Operators)**](docs/06_operators.md) - Đầy đủ toán tử số học, so sánh, logic song ngữ.
 - [🔀 **Phần VII: Cấu trúc điều kiện (If-Else)**](docs/07_if_else.md) - Cách sử dụng câu lệnh điều kiện và biểu thức điều kiện trả về giá trị.
 - [🔀 **Phần VIII: Cấu trúc lựa chọn (Switch-Case / Match)**](docs/08_switch_case.md) - Biểu thức rẽ nhánh nhiều lựa chọn hỗ trợ gom nhóm giá trị và biểu thức gán giá trị.
+- [🔁 **Phần IX: Vòng lặp (Loops)**](docs/09_loops.md) - Lặp không điều kiện (`loop`), lặp có điều kiện, duyệt theo phần tử (`for-each`) và duyệt theo index (`for-while`).
+- [🔧 **Phần X: Hàm (Functions)**](docs/10_functions.md) - Cú pháp khai báo hàm, tham số tường minh, trả về tuple (nhiều giá trị).
+- [📜 **Phần XI: Chuỗi ký tự (Strings)**](docs/11_strings.md) - Tạo chuỗi, chuyển đổi kiểu với `to_string()`, nối chuỗi, và các thao tác chuỗi phổ biến.

@@ -21,7 +21,7 @@ switch (biến) {
 #### 🇻🇳 Phiên bản tiếng Việt
 
 ```text
-trường_hợp (biến) (
+trường_hợp (biến) {
     case_a -> biểu_thức_hoặc_hành_động
     case_b -> biểu_thức_hoặc_hành_động
     _ -> giá_trị_mặc_định
@@ -47,7 +47,7 @@ var kết_quả = switch (x) {
 #### 🇻🇳 Phiên bản tiếng Việt
 
 ```text
-biến kết_quả = trường_hợp (x) (
+biến kết_quả = trường_hợp (x) {
     1 -> "Một"
     2 -> "Hai"
     _ -> "Khác"
@@ -73,7 +73,7 @@ switch (x) {
 #### 🇻🇳 Phiên bản tiếng Việt
 
 ```text
-trường_hợp (x) (
+trường_hợp (x) {
     1 | 3 -> // Thực thi khi x = 1 hoặc x = 3
     2 | 4 -> // Thực thi khi x = 2 hoặc x = 4
     _ -> // Trường hợp mặc định
