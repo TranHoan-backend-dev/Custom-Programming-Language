@@ -59,6 +59,12 @@ public class Lexer {
             case ';':
                 return new Token(TokenType.SEMICOLON, ";");
             case '.':
+                if (match('.')) {
+                    if (match('=')) {
+                        return new Token(TokenType.RANGE_INCLUSIVE, "..=");
+                    }
+                    return new Token(TokenType.RANGE_EXCLUSIVE, "..");
+                }
                 return new Token(TokenType.DOT, ".");
             case ',':
                 return new Token(TokenType.COMMA, ",");
@@ -147,10 +153,6 @@ public class Lexer {
         return c;
     }
 
-    /**
-     * Bo qua cac ky tu khoang trang. Neu nhu ky tu hien tai la khoang trang,
-     * se bo qua chung va tra ve vi tri (pos) cua ky tu thong thuong
-     */
     private boolean shouldInsertSemicolon(TokenType type) {
         if (type == null) return false;
         switch (type) {
@@ -172,12 +174,19 @@ public class Lexer {
             case RIGHT_PAREN:
             case RIGHT_BRACKET:
             case RIGHT_RACE:
+            case BREAK:
+            case CONTINUE:
+            case RETURN:
                 return true;
             default:
                 return false;
         }
     }
 
+    /**
+     * Bo qua cac ky tu khoang trang. Neu nhu ky tu hien tai la khoang trang,
+     * se bo qua chung va tra ve vi tri (pos) cua ky tu thong thuong
+     */
     private boolean skipWhiteSpace() {
         while (!isAtEnd()) {
             char c = peek(); // lay ra ky tu o vi tri hien tai

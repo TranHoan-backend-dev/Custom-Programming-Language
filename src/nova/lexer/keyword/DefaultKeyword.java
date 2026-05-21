@@ -27,6 +27,13 @@ public class DefaultKeyword {
         loop(registry);
         forType(registry);
         of(registry);
+        functionType(registry);
+        inType(registry);
+        rangeExclusive(registry);
+        rangeInclusive(registry);
+        breakType(registry);
+        continueType(registry);
+        returnType(registry);
         assign(registry);
         plus(registry);
         minus(registry);
@@ -602,6 +609,16 @@ public class DefaultKeyword {
                 VI,
                 TokenType.NOT_EQUAL
         );
+        registry.registry(
+                "is_not",
+                EN,
+                TokenType.NOT_EQUAL
+        );
+        registry.registry(
+                "khác",
+                VI,
+                TokenType.NOT_EQUAL
+        );
     }
 
     /**
@@ -692,6 +709,16 @@ public class DefaultKeyword {
                 VI,
                 TokenType.AND
         );
+        registry.registry(
+                "and",
+                EN,
+                TokenType.AND
+        );
+        registry.registry(
+                "và",
+                VI,
+                TokenType.AND
+        );
     }
 
     /**
@@ -710,6 +737,16 @@ public class DefaultKeyword {
                 VI,
                 TokenType.OR
         );
+        registry.registry(
+                "or",
+                EN,
+                TokenType.OR
+        );
+        registry.registry(
+                "hoặc",
+                VI,
+                TokenType.OR
+        );
     }
 
     /**
@@ -725,6 +762,16 @@ public class DefaultKeyword {
         );
         registry.registry(
                 "!",
+                VI,
+                TokenType.NOT
+        );
+        registry.registry(
+                "not",
+                EN,
+                TokenType.NOT
+        );
+        registry.registry(
+                "không",
                 VI,
                 TokenType.NOT
         );
@@ -925,6 +972,87 @@ public class DefaultKeyword {
                 "->",
                 VI,
                 TokenType.ARROW
+        );
+    }
+
+    private static void functionType(KeywordRegistry registry) {
+        registry.registry(
+                "function",
+                EN,
+                TokenType.FUNCTION
+        );
+        registry.registry(
+                "hàm",
+                VI,
+                TokenType.FUNCTION
+        );
+    }
+
+    private static void inType(KeywordRegistry registry) {
+        registry.registry(
+                "in",
+                EN,
+                TokenType.IN
+        );
+        registry.registry(
+                "từ",
+                VI,
+                TokenType.IN
+        );
+    }
+
+    private static void rangeExclusive(KeywordRegistry registry) {
+        registry.registry(
+                "đến",
+                VI,
+                TokenType.RANGE_EXCLUSIVE
+        );
+    }
+
+    private static void rangeInclusive(KeywordRegistry registry) {
+        registry.registry(
+                "đến_hết",
+                VI,
+                TokenType.RANGE_INCLUSIVE
+        );
+    }
+
+    private static void breakType(KeywordRegistry registry) {
+        registry.registry(
+                "break",
+                EN,
+                TokenType.BREAK
+        );
+        registry.registry(
+                "dừng",
+                VI,
+                TokenType.BREAK
+        );
+    }
+
+    private static void continueType(KeywordRegistry registry) {
+        registry.registry(
+                "continue",
+                EN,
+                TokenType.CONTINUE
+        );
+        registry.registry(
+                "tiếp",
+                VI,
+                TokenType.CONTINUE
+        );
+    }
+
+    private static void returnType(KeywordRegistry registry) {
+        registry.registry(
+                "return",
+                EN,
+                TokenType.RETURN
+        );
+        registry.registry(
+                "trả_về",
+                VI,
+                TokenType.RETURN
         );
     }
 }

@@ -43,6 +43,8 @@ public enum TokenType {
     VAR, // Kiểu dữ liệu tự suy luận
     MUT, // Mutable
     CONST, // Hằng số
+    FUNCTION, // Từ khóa khai báo hàm (tùy chọn)
+    RETURN, // Từ khóa trả về giá trị của hàm
 
     // <editor-fold> desc="If statement"
     IF,
@@ -57,6 +59,9 @@ public enum TokenType {
     LOOP, // Vòng lặp
     FOR,
     OF,
+    IN, // từ
+    BREAK, // dừng
+    CONTINUE, // tiếp
     // </editor-fold>
     // </editor-fold>
 
@@ -81,6 +86,8 @@ public enum TokenType {
 
     NOT, // !
     ARROW, // ->
+    RANGE_EXCLUSIVE, // .. hoặc đến
+    RANGE_INCLUSIVE, // ..= hoặc đến_hết
     // </editor-fold>
 
     // <editor-fold> desc="==================== Delimiters ===================="

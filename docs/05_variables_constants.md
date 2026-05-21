@@ -148,3 +148,36 @@ hằng_số chuỗi X = "10"
 
 > ⚠️ **Scope của hằng số:** Hằng số cũng tuân theo block scope giống biến thường. Tuy nhiên, hằng số khai báo ở cấp cao nhất (top-level, ngoài mọi hàm) có thể được truy cập từ toàn bộ chương trình.
 
+---
+
+### 5. Khai báo Biến Nullable (Null Safety)
+
+Mặc định, tất cả các biến trong CPL đều **không được phép** nhận giá trị rỗng (`null` / `k_tồn_tại`) nhằm tránh lỗi tham chiếu null khi chạy chương trình. 
+
+Nếu muốn khai báo một biến có thể nhận giá trị null, bạn phải sử dụng toán tử **`?`** theo một trong hai cách dưới đây:
+
+#### A. Khai báo với kiểu dữ liệu tường minh
+Đặt toán tử `?` đứng ngay sau tên kiểu dữ liệu.
+
+```text
+// Phiên bản tiếng Anh
+string? mut name = null
+name = "An" // Hợp lệ
+
+// Phiên bản tiếng Việt
+chuỗi? khả_biến ten = k_tồn_tại
+ten = "An" // Hợp lệ
+```
+
+#### B. Khai báo tự suy luận kiểu dữ liệu
+Đặt toán tử `?` đứng ngay sau tên biến để trình biên dịch biết biến đó có kiểu nullable.
+
+```text
+// Phiên bản tiếng Anh
+var mut nickname? = "Guest"
+nickname = null // Hợp lệ, kiểu tự suy luận của nickname là 'string?'
+
+// Phiên bản tiếng Việt
+biến khả_biến bietDanh? = "Khach"
+bietDanh = k_tồn_tại // Hợp lệ, kiểu tự suy luận của bietDanh là 'chuỗi?'
+```
