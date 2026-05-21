@@ -10,22 +10,41 @@ CPL hỗ trợ định nghĩa hàm với cú pháp rõ ràng, tường minh. Tê
 
 ## 1. Cú pháp khai báo hàm
 
-Thứ tự khai báo: **tên hàm** `()` `->` **kiểu trả về** `{}`
+CPL cho phép khai báo hàm theo hai phong cách:
+
+1. **Bắt đầu trực tiếp bằng tên hàm** (không dùng từ khóa khai báo).
+2. **Sử dụng từ khóa khai báo tùy chọn** (`function` trong tiếng Anh hoặc `hàm` trong tiếng Việt) đứng trước tên hàm để tăng tính rõ ràng và giúp IDE hỗ trợ tốt hơn.
+
+> [!IMPORTANT]
+> **Từ khóa khai báo hàm là TÙY CHỌN (Optional):**
+>
+> - Việc sử dụng từ khóa `function` (tiếng Anh) hoặc `hàm` (tiếng Việt) trước tên hàm là không bắt buộc. Bạn có thể chọn cách khai báo có hoặc không có từ khóa tùy theo sở thích và độ phức tạp của dự án.
+> - Cú pháp tiếng Anh tương ứng sử dụng từ khóa **`function`** (ví dụ: `function functionName() -> void`).
 
 ### 🇬🇧 Phiên bản tiếng Anh
 
 ```text
+// Cách 1: Bắt đầu trực tiếp bằng tên hàm
 functionName() -> ReturnType {
+    // Thân hàm
+}
+
+// Cách 2: Sử dụng từ khóa function (tùy chọn)
+function functionName() -> ReturnType {
     // Thân hàm
 }
 ```
 
 ### 🇻🇳 Phiên bản tiếng Việt
 
-CPL không có từ khóa khai báo hàm riêng — tên hàm đứng đầu trực tiếp (tương tự Go).
-
 ```text
-tênHàm() -> KiểuTrảVề {
+// Cách 1: Bắt đầu trực tiếp bằng tên hàm
+tenHam() -> KiểuTrảVề {
+    // Thân hàm
+}
+
+// Cách 2: Sử dụng từ khóa hàm (tùy chọn)
+hàm tenHam() -> KiểuTrảVề {
     // Thân hàm
 }
 ```
@@ -37,7 +56,8 @@ tênHàm() -> KiểuTrảVề {
 ### 🇬🇧 Phiên bản tiếng Anh
 
 ```text
-greet() -> void {
+// Sử dụng từ khóa function
+function greet() -> void {
     println("Hello!")
 }
 ```
@@ -45,7 +65,8 @@ greet() -> void {
 ### 🇻🇳 Phiên bản tiếng Việt
 
 ```text
-chàoHỏi() -> trống {
+// Sử dụng từ khóa hàm
+hàm chaoHoi() -> trống {
     in_dòng_mới("Xin chào!")
 }
 ```
@@ -61,11 +82,13 @@ Tham số được khai báo theo cú pháp: **kiểu dữ liệu + tên biến*
 ### 🇬🇧 Phiên bản tiếng Anh
 
 ```text
+// Ví dụ không dùng từ khóa khai báo
 add(int a, int b) -> int {
     return a + b
 }
 
-greetUser(string name, int age) -> void {
+// Ví dụ dùng từ khóa function
+function greetUser(string name, int age) -> void {
     println("Tên: " + name + ", Tuổi: " + age)
 }
 ```
@@ -73,11 +96,13 @@ greetUser(string name, int age) -> void {
 ### 🇻🇳 Phiên bản tiếng Việt
 
 ```text
+// Ví dụ không dùng từ khóa khai báo
 tổng(số_nguyên a, số_nguyên b) -> số_nguyên {
     trả_về a + b
 }
 
-chàoNgườiDùng(chuỗi tên, số_nguyên tuổi) -> trống {
+// Ví dụ dùng từ khóa hàm
+hàm chaoNguoiDung(chuỗi tên, số_nguyên tuổi) -> trống {
     in_dòng_mới("Tên: " + tên + ", Tuổi: " + tuổi)
 }
 ```
@@ -141,7 +166,6 @@ trịTuyệtĐối(số_nguyên n) -> số_nguyên {
 
 ---
 
-
 ## 5. Hàm trả về Tuple (Multiple Return Values)
 
 CPL hỗ trợ trả về **nhiều giá trị** bằng cách sử dụng Tuple. Cú pháp kiểu trả về là danh sách các `kiểu_dữ_liệu tên` được bọc trong `()`.
@@ -188,7 +212,8 @@ in_dòng_mới(d)   // 1
 
 ## 7. Bảng từ khóa liên quan
 
-| Tiếng Anh | Tiếng Việt | Token    | Mô tả                         |
-| :-------- | :--------- | :------- | :---------------------------- |
-| `return`  | `trả_về`   | `RETURN` | Trả về giá trị và thoát hàm   |
-| `void`    | `trống`    | `VOID`   | Kiểu trả về rỗng (không giá trị) |
+| Tiếng Anh  | Tiếng Việt | Token      | Mô tả                                 |
+| :--------- | :--------- | :--------- | :------------------------------------ |
+| `function` | `hàm`      | `FUNCTION` | Bắt đầu khai báo hàm (tùy chọn)       |
+| `return`   | `trả_về`   | `RETURN`   | Trả về giá trị và thoát hàm           |
+| `void`     | `trống`    | `VOID`     | Kiểu trả về rỗng (không có giá trị)   |

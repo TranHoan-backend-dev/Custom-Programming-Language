@@ -140,59 +140,39 @@ duyệt n của số {
 
 ---
 
-### 3.2 Duyệt theo index có điều kiện (For-While)
+### 3.2 Duyệt theo khoảng (Range-based Loop)
 
-Duyệt với một biến đếm và điều kiện dừng tùy chỉnh. Tương đương với `for (int i = 0; điều_kiện; i++)` trong Java.
-
-Từ khóa điều kiện: **`while`** (EN) / **`miễn`** (VI) — có nghĩa là "chừng nào còn thỏa mãn điều kiện".
+Duyệt với biến chạy đi qua một khoảng giá trị xác định (tương đương với vòng lặp `for (int i = start; i < end; i++)` trong Java nhưng ngắn gọn và an toàn hơn).
 
 #### 🇬🇧 Phiên bản tiếng Anh
 
-```text
-for <var> while <condition> {
-    // Thực thi khi condition đúng
-}
-```
+*   **Không bao gồm cận cuối (Exclusive):** `start..end` (chạy từ `start` đến `end - 1`)
+    ```text
+    for i in 0..10 {
+        println(i) // In các số từ 0 đến 9
+    }
+    ```
+*   **Bao gồm cả cận cuối (Inclusive):** `start..=end` (chạy từ `start` đến `end`)
+    ```text
+    for i in 1..=5 {
+        println(i) // In các số từ 1 đến 5
+    }
+    ```
 
 #### 🇻🇳 Phiên bản tiếng Việt
 
-```text
-duyệt <biến> miễn <điều_kiện> {
-    // Thực thi khi điều_kiện đúng
-}
-```
-
-#### Ví dụ — Nhỏ hơn (exclusive)
-
-```text
-// en
-for i while i < list_size {
-    println(list[i])
-    i = i + 1
-}
-
-// vi
-duyệt i miễn i < kích_thước {
-    in_dòng_mới(danh_sách[i])
-    i = i + 1
-}
-```
-
-#### Ví dụ — Nhỏ hơn hoặc bằng (inclusive)
-
-```text
-// en
-for i while i <= list_size {
-    println(list[i])
-    i = i + 1
-}
-
-// vi
-duyệt i miễn i <= kích_thước {
-    in_dòng_mới(danh_sách[i])
-    i = i + 1
-}
-```
+*   **Không bao gồm cận cuối (Exclusive):** `từ a đến b` (chạy từ `a` đến `b - 1`)
+    ```text
+    duyệt i từ 0 đến 10 {
+        in_dòng_mới(i) // In các số từ 0 đến 9
+    }
+    ```
+*   **Bao gồm cả cận cuối (Inclusive):** `từ a đến_hết b` (chạy từ `a` đến `b`)
+    ```text
+    duyệt i từ 1 đến_hết 5 {
+        in_dòng_mới(i) // In các số từ 1 đến 5
+    }
+    ```
 
 ---
 
@@ -306,12 +286,13 @@ duyệt n của số {
 
 ## 6. Bảng từ khóa vòng lặp
 
-| Tiếng Anh  | Tiếng Việt | Token      | Mô tả                                            |
-| :--------- | :--------- | :--------- | :----------------------------------------------- |
-| `loop`     | `lặp`      | `LOOP`     | Bắt đầu vòng lặp (có hoặc không điều kiện)        |
-| `for`      | `duyệt`    | `FOR`      | Bắt đầu vòng lặp duyệt danh sách                 |
-| `of`       | `của`      | `OF`       | Chỉ định danh sách trong `for-each`               |
-| `while`    | `miễn`     | `WHILE`    | Điều kiện tiếp tục trong `for` theo index         |
-| `break`    | `dừng`     | `BREAK`    | Thoát khỏi vòng lặp, có thể trả về giá trị       |
-| `continue` | `tiếp`     | `CONTINUE` | Bỏ qua iteration hiện tại, chuyển sang vòng tiếp |
+| Tiếng Anh      | Tiếng Việt       | Token      | Mô tả                                            |
+| :------------- | :--------------- | :--------- | :----------------------------------------------- |
+| `loop`         | `lặp`            | `LOOP`     | Bắt đầu vòng lặp vô hạn hoặc lặp có điều kiện    |
+| `for`          | `duyệt`          | `FOR`      | Bắt đầu vòng lặp duyệt (duyệt khoảng / danh sách) |
+| `of`           | `của`            | `OF`       | Chỉ định danh sách trong `for-each`              |
+| `in`           | `từ`             | `IN`       | Bắt đầu chỉ định khoảng chạy trong range-based   |
+| `..` hoặc `..=`| `đến` / `đến_hết`| `RANGE`    | Xác định giới hạn khoảng chạy (Exclusive / Inclusive) |
+| `break`        | `dừng`           | `BREAK`    | Thoát khỏi vòng lặp, có thể trả về giá trị       |
+| `continue`     | `tiếp`           | `CONTINUE` | Bỏ qua iteration hiện tại, chuyển sang vòng tiếp |
 
