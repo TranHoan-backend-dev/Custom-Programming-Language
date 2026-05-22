@@ -1,103 +1,157 @@
+package verification;
+
 import nova.lexer.Lexer;
-import nova.lexer.TokenType;
 import nova.lexer.Token;
+import nova.lexer.TokenType;
 import nova.lexer.LexerError;
+import nova.parser.Parser;
 import nova.ast.Expr;
 import nova.ast.Stmt;
+import java.util.ArrayList;
 import java.util.List;
 
-public class Main {
+/**
+ * Lớp kiểm thử tích hợp chuyên biệt cho bộ phân tích cú pháp (Parser).
+ * Chứa các ca kiểm thử kiểm tra tính đúng đắn của việc phân tích cú pháp (Unary, Loops, Switch-case, Generics, Nullable).
+ * 
+ * @author XUAN HOAN
+ */
+public class Verify12Parser {
+    /**
+     * Phương thức entry point để chạy toàn bộ các ca kiểm thử của Parser.
+     * 
+     * @param args Các đối số dòng lệnh (không sử dụng)
+     */
     public static void main(String[] args) {
-        var input = """
-                hàm a() -> số_nguyên {
-                    biến x = 10
-                    nếu (x > 5) thì {
-                        x = 20
-                    }
-                }""";
+        System.out.println("================================================================================");
+        System.out.println("RUNNING PARSER INTEGRATION TESTS");
+        System.out.println("================================================================================\n");
 
-        System.out.println("--- Chạy phân tích từ vựng ---");
-        System.out.println("Mã nguồn:\n" + input);
-        System.out.println("----------------------------------");
+        // Ca kiểm thử 1: Khai báo biến, hằng và kiểu generic, nullable
+        verifyTestCase(
+            "Ca kiểm thử 1: Khai báo biến, kiểu Generic và Nullable",
+            """
+            biến DanhSách<số_nguyên> danh_sách = null;
+            biến chuỗi? tên = "Nova";
+            hằng_số số_thực_kép PI = 3.14;
+            """
+        );
 
-        var lexer = new Lexer(input);
-        List<Token> tokens = new java.util.ArrayList<>();
+        // Ca kiểm thử 2: Biểu thức một ngôi (Unary) và toán tử so sánh
+        verifyTestCase(
+            "Ca kiểm thử 2: Biểu thức một ngôi (Unary) và logic",
+            """
+            biến logic x = !đúng;
+            biến số_nguyên y = -10;
+            """
+        );
+
+        // Ca kiểm thử 3: Vòng lặp while (lặp) và for (duyệt)
+        verifyTestCase(
+            "Ca kiểm thử 3: Các loại vòng lặp (lặp, duyệt)",
+            """
+            lặp (x < 10) thì {
+                x = x + 1;
+                nếu (x == 5) thì {
+                    tiếp;
+                }
+                nếu (x == 8) thì {
+                    dừng;
+                }
+            }
+            duyệt n của danh_sách {
+                in_dòng_mới(n);
+            }
+            duyệt i từ 0 đến 5 {
+                in_dòng_mới(i);
+            }
+            """
+        );
+
+        // Ca kiểm thử 4: Cấu trúc rẽ nhánh switch-case (trường_hợp)
+        verifyTestCase(
+            "Ca kiểm thử 4: Cấu trúc rẽ nhánh trường_hợp (switch-case)",
+            """
+            trường_hợp (điểm) {
+                10 | 9 -> in("Xuất sắc");
+                8 | 7 -> in("Khá");
+                6 | 5 -> in("Trung bình");
+                sai -> in("Yếu");
+            }
+            """
+        );
+
+        // Ca kiểm thử 5: Khai báo hàm đầy đủ cấu trúc
+        verifyTestCase(
+            "Ca kiểm thử 5: Khai báo hàm tiếng Việt",
+            """
+            hàm tính_tổng(số_nguyên a, số_nguyên b) -> số_nguyên {
+                trả_về a + b;
+            }
+            """
+        );
+    }
+
+    /**
+     * Thực thi một ca kiểm thử phân tích cú pháp, in mã nguồn và kết quả cây AST hoặc lỗi.
+     * 
+     * @param title Tiêu đề của ca kiểm thử
+     * @param input Mã nguồn Nova đầu vào
+     */
+    private static void verifyTestCase(String title, String input) {
+        System.out.println("Ca kiểm thử: " + title);
+        System.out.println("---------------- Mã nguồn ----------------");
+        System.out.println(input.stripIndent().trim());
+        System.out.println("---------------- Cây AST -----------------");
+
+        // 1. Chạy Lexer để sinh luồng Token
+        Lexer lexer = new Lexer(input);
+        List<Token> tokens = new ArrayList<>();
         try {
             while (true) {
-                var token = lexer.nextToken();
+                Token token = lexer.nextToken();
                 tokens.add(token);
-                System.out.println(token);
                 if (token.type() == TokenType.EOF) {
                     break;
                 }
             }
         } catch (LexerError e) {
-            System.err.println(e.getMessage());
+            System.out.println("LỖI PHÂN TÍCH TỪ VỰNG: " + e.getMessage());
+            System.out.println("Trạng thái: THẤT BẠI");
+            System.out.println("================================================================================\n");
+            return;
         }
 
-        // --- MÔ PHỎNG DỰNG VÀ DUYỆT AST THỦ CÔNG ---
-        System.out.println("\n--- Khởi dựng AST thủ công từ luồng token trên ---");
-
-        // 1. Khởi dựng biểu thức: biến x = 10
-        Token varKeyword = new Token(TokenType.VAR, "biến");
-        Token varName = new Token(TokenType.IDENTIFIER, "x");
-        Expr varValue = new Expr.Literal(10);
-        Stmt varDecl = new Stmt.Var(varKeyword, varName, null, varValue);
-
-        // 2. Khởi dựng điều kiện: nếu (x > 5)
-        Expr condition = new Expr.Binary(
-            new Expr.Variable(new Token(TokenType.IDENTIFIER, "x")),
-            new Token(TokenType.GREATER_THAN, ">"),
-            new Expr.Literal(5)
-        );
-
-        // 3. Nhánh 'then': x = 20
-        Stmt assignStmt = new Stmt.Expression(
-            new Expr.Assign(
-                new Token(TokenType.IDENTIFIER, "x"),
-                new Expr.Literal(20)
-            )
-        );
-        Stmt thenBranch = new Stmt.Block(List.of(assignStmt));
-        Stmt ifStmt = new Stmt.If(condition, thenBranch, null);
-
-        // 4. Khai báo hàm: hàm a() -> số_nguyên { ... }
-        Token functionName = new Token(TokenType.IDENTIFIER, "a");
-        Token returnType = new Token(TokenType.TYPE_INT, "số_nguyên");
-        Stmt functionAST = new Stmt.Function(
-            functionName,
-            List.of(),
-            returnType,
-            List.of(varDecl, ifStmt)
-        );
-
-        // 5. Sử dụng Visitor để in AST
-        ASTPrinter printer = new ASTPrinter();
-        System.out.println("Kết quả in AST (thông qua Visitor Pattern):");
-        System.out.println(printer.print(functionAST));
-
-        System.out.println("\n--- Chạy phân tích cú pháp thực tế (Parser) ---");
-        var realParser = new nova.parser.Parser(tokens);
+        // 2. Chạy Parser để xây dựng AST
+        Parser parser = new Parser(tokens);
         try {
-            var parsedStmts = realParser.parse();
-            if (realParser.hasErrors()) {
+            List<Stmt> statements = parser.parse();
+            if (parser.hasErrors()) {
                 System.out.println("Phát hiện lỗi cú pháp:");
-                for (var err : realParser.getErrors()) {
+                for (var err : parser.getErrors()) {
                     System.out.println("Lỗi: " + err.getMessage());
                 }
+                System.out.println("Trạng thái: THẤT BẠI");
             } else {
-                System.out.println("Kết quả phân tích cú pháp thực tế:");
-                for (var stmt : parsedStmts) {
+                var printer = new VerifyASTPrinter();
+                for (Stmt stmt : statements) {
                     System.out.println(printer.print(stmt));
                 }
+                System.out.println("Trạng thái: THÀNH CÔNG");
             }
         } catch (Exception e) {
             e.printStackTrace();
+            System.out.println("Trạng thái: THẤT BẠI (Ngoại lệ)");
         }
+        System.out.println("================================================================================\n");
     }
 
-    // Lớp in AST sử dụng mẫu thiết kế Visitor Pattern
-    static class ASTPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
+    /**
+     * Lớp in AST nội bộ phục vụ cho quá trình kiểm thử Parser.
+     * 
+     * @author XUAN HOAN
+     */
+    private static class VerifyASTPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
         public String print(Stmt stmt) {
             return stmt.accept(this);
         }

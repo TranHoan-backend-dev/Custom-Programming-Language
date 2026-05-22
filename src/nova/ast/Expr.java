@@ -16,6 +16,7 @@ public abstract class Expr {
         R visitLogicalExpr(Logical expr);
         R visitVariableExpr(Variable expr);
         R visitCallExpr(Call expr);
+        R visitUnaryExpr(Unary expr);
     }
 
     public abstract <R> R accept(Visitor<R> visitor);
@@ -157,6 +158,34 @@ public abstract class Expr {
         @Override
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitCallExpr(this);
+        }
+    }
+
+    /**
+     * Biểu thức một ngôi như phủ định logic (!) hoặc dấu âm (-).
+     * 
+     * @author XUAN HOAN
+     */
+    public static class Unary extends Expr {
+        /** Toán tử một ngôi (ví dụ: ! hoặc -) */
+        public final Token operator;
+        /** Biểu thức chịu tác động ở phía bên phải */
+        public final Expr right;
+
+        /**
+         * Khởi tạo một biểu thức một ngôi.
+         * 
+         * @param operator Token toán tử một ngôi (! hoặc -)
+         * @param right Biểu thức chịu tác động phía bên phải
+         */
+        public Unary(Token operator, Expr right) {
+            this.operator = operator;
+            this.right = right;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitUnaryExpr(this);
         }
     }
 }

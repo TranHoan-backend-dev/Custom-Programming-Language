@@ -14,7 +14,10 @@ public enum TokenType {
     TYPE_BOOLEAN,
 
     // <editor-fold> desc="Số"
-    TYPE_INTEGER,
+    TYPE_INT,
+    TYPE_INT16,
+    TYPE_INT32,
+    TYPE_INT64,
     TYPE_DOUBLE,
     TYPE_FLOAT,
     // </editor-fold>
@@ -48,9 +51,10 @@ public enum TokenType {
 
     // <editor-fold> desc="If statement"
     IF,
-    THEN,
+    THEN, // thì
     ELSE,
-    OR_NOT,
+    ELSE_IF, // còn_nếu
+    OR_NOT, // hoặc không
     // </editor-fold>
 
     SWITCH, // Switch case
@@ -63,6 +67,10 @@ public enum TokenType {
     BREAK, // dừng
     CONTINUE, // tiếp
     // </editor-fold>
+
+    // Boolean keywords
+    TRUE,  // đúng
+    FALSE, // sai
     // </editor-fold>
 
     // <editor-fold> desc="==================== Toán tử ===================="
@@ -88,6 +96,9 @@ public enum TokenType {
     ARROW, // ->
     RANGE_EXCLUSIVE, // .. hoặc đến
     RANGE_INCLUSIVE, // ..= hoặc đến_hết
+
+    // Null safety
+    QUESTION,        // ?
     // </editor-fold>
 
     // <editor-fold> desc="==================== Delimiters ===================="

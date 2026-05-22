@@ -87,6 +87,8 @@ public class Lexer {
             case '!':
                 return match('=') ?
                         new Token(TokenType.NOT_EQUAL, "!=") : new Token(TokenType.NOT, "!");
+            case '?':
+                return new Token(TokenType.QUESTION, "?");
             case '<':
                 return match('=') ?
                         new Token(TokenType.LESS_THAN_EQUAL, "<=") : new Token(TokenType.LESS_THAN, "<");
@@ -98,7 +100,7 @@ public class Lexer {
                 throw new LexerError(String.format(illegalCharacter, '&', line, col));
             case '|':
                 if (match('|')) return new Token(TokenType.OR, "||");
-                throw new LexerError(String.format(illegalCharacter, '|', line, col));
+                return new Token(TokenType.OR, "|");
             case '"': // read string
                 return readString();
             case '\'': // read character
@@ -160,7 +162,10 @@ public class Lexer {
             case TYPE_STRING:
             case TYPE_CHAR:
             case TYPE_BOOLEAN:
-            case TYPE_INTEGER:
+            case TYPE_INT:
+            case TYPE_INT16:
+            case TYPE_INT32:
+            case TYPE_INT64:
             case TYPE_DOUBLE:
             case TYPE_FLOAT:
             case VOID:
@@ -168,6 +173,8 @@ public class Lexer {
             case LITERAL_STRING:
             case LITERAL_CHAR:
             case LITERAL_BOOLEAN:
+            case TRUE:
+            case FALSE:
             case LITERAL_INTEGER:
             case LITERAL_DOUBLE:
             case LITERAL_FLOAT:

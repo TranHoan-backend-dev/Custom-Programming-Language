@@ -22,6 +22,7 @@ public class DefaultKeyword {
         ifType(registry);
         thenType(registry);
         elseType(registry);
+        elseIfType(registry);
         orNot(registry);
         switchType(registry);
         loop(registry);
@@ -143,22 +144,22 @@ public class DefaultKeyword {
         registry.registry(
                 "true",
                 EN,
-                TokenType.LITERAL_BOOLEAN
+                TokenType.TRUE
         );
         registry.registry(
                 "false",
                 EN,
-                TokenType.LITERAL_BOOLEAN
+                TokenType.FALSE
         );
         registry.registry(
                 "đúng",
                 VI,
-                TokenType.LITERAL_BOOLEAN
+                TokenType.TRUE
         );
         registry.registry(
                 "sai",
                 VI,
-                TokenType.LITERAL_BOOLEAN
+                TokenType.FALSE
         );
     }
 
@@ -171,42 +172,42 @@ public class DefaultKeyword {
         registry.registry(
                 "int",
                 EN,
-                TokenType.TYPE_INTEGER
+                TokenType.TYPE_INT
         );
         registry.registry(
                 "int16",
                 EN,
-                TokenType.TYPE_INTEGER
+                TokenType.TYPE_INT16
         );
         registry.registry(
                 "int32",
                 EN,
-                TokenType.TYPE_INTEGER
+                TokenType.TYPE_INT32
         );
         registry.registry(
                 "int64",
                 EN,
-                TokenType.TYPE_INTEGER
+                TokenType.TYPE_INT64
         );
         registry.registry(
                 "số_nguyên",
                 VI,
-                TokenType.TYPE_INTEGER
+                TokenType.TYPE_INT
         );
         registry.registry(
                 "số_nguyên_16",
                 VI,
-                TokenType.TYPE_INTEGER
+                TokenType.TYPE_INT16
         );
         registry.registry(
                 "số_nguyên_32",
                 VI,
-                TokenType.TYPE_INTEGER
+                TokenType.TYPE_INT32
         );
         registry.registry(
                 "số_nguyên_64",
                 VI,
-                TokenType.TYPE_INTEGER
+                TokenType.TYPE_INT64
         );
     }
 
@@ -366,14 +367,17 @@ public class DefaultKeyword {
                 TokenType.ELSE
         );
         registry.registry(
-                "còn_nếu",
-                VI,
-                TokenType.ELSE
-        );
-        registry.registry(
                 "không_thì",
                 VI,
                 TokenType.ELSE
+        );
+    }
+
+    private static void elseIfType(KeywordRegistry registry) {
+        registry.registry(
+                "còn_nếu",
+                VI,
+                TokenType.ELSE_IF
         );
     }
 
@@ -384,7 +388,7 @@ public class DefaultKeyword {
      */
     private static void orNot(KeywordRegistry registry) {
         registry.registry(
-                "or not",
+                "or_not",
                 EN,
                 TokenType.OR_NOT
         );
