@@ -39,20 +39,20 @@ public class Main {
         System.out.println("\n--- Khởi dựng AST thủ công từ luồng token trên ---");
 
         // 1. Khởi dựng biểu thức: biến x = 10
-        Token varKeyword = new Token(TokenType.VAR, "biến");
-        Token varName = new Token(TokenType.IDENTIFIER, "x");
-        Expr varValue = new Expr.Literal(10);
-        Stmt varDecl = new Stmt.Var(varKeyword, varName, null, varValue);
+        var varKeyword = new Token(TokenType.VAR, "biến");
+        var varName = new Token(TokenType.IDENTIFIER, "x");
+        var varValue = new Expr.Literal(10);
+        var varDecl = new Stmt.Var(varKeyword, varName, null, varValue);
 
         // 2. Khởi dựng điều kiện: nếu (x > 5)
-        Expr condition = new Expr.Binary(
+        var condition = new Expr.Binary(
             new Expr.Variable(new Token(TokenType.IDENTIFIER, "x")),
             new Token(TokenType.GREATER_THAN, ">"),
             new Expr.Literal(5)
         );
 
         // 3. Nhánh 'then': x = 20
-        Stmt assignStmt = new Stmt.Expression(
+        var assignStmt = new Stmt.Expression(
             new Expr.Assign(
                 new Token(TokenType.IDENTIFIER, "x"),
                 new Expr.Literal(20)
@@ -62,9 +62,9 @@ public class Main {
         Stmt ifStmt = new Stmt.If(condition, thenBranch, null);
 
         // 4. Khai báo hàm: hàm a() -> số_nguyên { ... }
-        Token functionName = new Token(TokenType.IDENTIFIER, "a");
-        Token returnType = new Token(TokenType.TYPE_INT, "số_nguyên");
-        Stmt functionAST = new Stmt.Function(
+        var functionName = new Token(TokenType.IDENTIFIER, "a");
+        var returnType = new Token(TokenType.TYPE_INT, "số_nguyên");
+        var functionAST = new Stmt.Function(
             functionName,
             List.of(),
             returnType,
@@ -72,7 +72,7 @@ public class Main {
         );
 
         // 5. Sử dụng Visitor để in AST
-        ASTPrinter printer = new ASTPrinter();
+        var printer = new ASTPrinter();
         System.out.println("Kết quả in AST (thông qua Visitor Pattern):");
         System.out.println(printer.print(functionAST));
 
@@ -108,8 +108,8 @@ public class Main {
 
         @Override
         public String visitBlockStmt(Stmt.Block stmt) {
-            StringBuilder sb = new StringBuilder("{\n");
-            for (Stmt s : stmt.statements) {
+            var sb = new StringBuilder("{\n");
+            for (var s : stmt.statements) {
                 sb.append("    ").append(s.accept(this).replace("\n", "\n    ")).append("\n");
             }
             sb.append("}");
@@ -123,7 +123,7 @@ public class Main {
 
         @Override
         public String visitFunctionStmt(Stmt.Function stmt) {
-            StringBuilder sb = new StringBuilder("Hàm: ")
+            var sb = new StringBuilder("Hàm: ")
                     .append(stmt.name.lexeme())
                     .append("\nTham số: ");
             if (stmt.parameters.isEmpty()) {
@@ -146,7 +146,7 @@ public class Main {
 
         @Override
         public String visitIfStmt(Stmt.If stmt) {
-            StringBuilder sb = new StringBuilder("Nếu (")
+            var sb = new StringBuilder("Nếu (")
                     .append(stmt.condition.accept(this))
                     .append(") Thì ");
             sb.append(stmt.thenBranch.accept(this));
@@ -162,8 +162,8 @@ public class Main {
 
         @Override
         public String visitVarStmt(Stmt.Var stmt) {
-            String typeStr = stmt.type != null ? " (Kiểu: " + stmt.type.lexeme() + ")" : " (Tự suy luận)";
-            String initStr = stmt.initializer != null ? " Khởi tạo: " + stmt.initializer.accept(this) : "";
+            var typeStr = stmt.type != null ? " (Kiểu: " + stmt.type.lexeme() + ")" : " (Tự suy luận)";
+            var initStr = stmt.initializer != null ? " Khởi tạo: " + stmt.initializer.accept(this) : "";
             return "Khai báo " + stmt.keyword.lexeme() + " [" + stmt.name.lexeme() + "]" + typeStr + initStr;
         }
 
@@ -205,7 +205,7 @@ public class Main {
 
         @Override
         public String visitCallExpr(Expr.Call expr) {
-            StringBuilder sb = new StringBuilder("Gọi_hàm ").append(expr.callee.accept(this)).append(" với (");
+            var sb = new StringBuilder("Gọi_hàm ").append(expr.callee.accept(this)).append(" với (");
             for (int i = 0; i < expr.arguments.size(); i++) {
                 sb.append(expr.arguments.get(i).accept(this));
                 if (i < expr.arguments.size() - 1) sb.append(", ");
@@ -223,6 +223,45 @@ public class Main {
         @Override
         public String visitUnaryExpr(Expr.Unary expr) {
             return "(" + expr.operator.lexeme() + expr.right.accept(this) + ")";
+        }
+
+        /**
+         * Chuyển đổi biểu thức Get (truy cập phương thức hoặc thuộc tính qua dấu chấm) sang chuỗi.
+         * 
+         * @param expr Biểu thức Get cần chuyển đổi
+         * @return Chuỗi biểu diễn biểu thức Get dạng đối_tượng.thuộc_tính
+         */
+        @Override
+        public String visitGetExpr(Expr.Get expr) {
+            return expr.object.accept(this) + "." + expr.name.lexeme();
+        }
+
+        /**
+         * Chuyển đổi biểu thức StmtExpr (biểu thức bọc câu lệnh) sang chuỗi.
+         * 
+         * @param expr Biểu thức StmtExpr
+         * @return Chuỗi biểu diễn câu lệnh được bọc bên trong
+         */
+        @Override
+        public String visitStmtExpr(Expr.StmtExpr expr) {
+            return expr.statement.accept(this);
+        }
+
+        /**
+         * Chuyển đổi biểu thức Tuple nhiều giá trị sang chuỗi.
+         * 
+         * @param expr Biểu thức Tuple
+         * @return Chuỗi biểu diễn Tuple (ví dụ: (10, 20))
+         */
+        @Override
+        public String visitTupleExpr(Expr.Tuple expr) {
+            var sb = new StringBuilder("(");
+            for (int i = 0; i < expr.expressions.size(); i++) {
+                sb.append(expr.expressions.get(i).accept(this));
+                if (i < expr.expressions.size() - 1) sb.append(", ");
+            }
+            sb.append(")");
+            return sb.toString();
         }
 
         /**
@@ -280,7 +319,7 @@ public class Main {
          */
         @Override
         public String visitSwitchStmt(Stmt.Switch stmt) {
-            StringBuilder sb = new StringBuilder("Trường_hợp (")
+            var sb = new StringBuilder("Trường_hợp (")
                     .append(stmt.value.accept(this))
                     .append(") {\n");
             for (Stmt.SwitchCase sc : stmt.cases) {

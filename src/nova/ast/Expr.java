@@ -17,6 +17,15 @@ public abstract class Expr {
         R visitVariableExpr(Variable expr);
         R visitCallExpr(Call expr);
         R visitUnaryExpr(Unary expr);
+        R visitGetExpr(Get expr);
+        R visitStmtExpr(StmtExpr expr);
+        /**
+         * Xử lý biểu thức Tuple nhiều giá trị.
+         * 
+         * @param expr Biểu thức Tuple cần xử lý
+         * @return Kết quả xử lý kiểu {@code R}
+         */
+        R visitTupleExpr(Tuple expr);
     }
 
     public abstract <R> R accept(Visitor<R> visitor);
@@ -186,6 +195,82 @@ public abstract class Expr {
         @Override
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitUnaryExpr(this);
+        }
+    }
+
+    /**
+     * Biểu thức truy cập thuộc tính hoặc phương thức bằng toán tử chấm '.' (ví dụ: đối_tượng.thuộc_tính)
+     * 
+     * @author XUAN HOAN
+     */
+    public static class Get extends Expr {
+        /** Biểu thức đối tượng được truy cập */
+        public final Expr object;
+        /** Token tên thuộc tính hoặc phương thức */
+        public final Token name;
+
+        /**
+         * Khởi tạo biểu thức truy cập thuộc tính/phương thức.
+         * 
+         * @param object Biểu thức đối tượng
+         * @param name Token tên thuộc tính hoặc phương thức
+         */
+        public Get(Expr object, Token name) {
+            this.object = object;
+            this.name = name;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitGetExpr(this);
+        }
+    }
+
+    /**
+     * Biểu thức bọc câu lệnh (ví dụ câu lệnh if hoặc switch hoạt động như biểu thức)
+     * 
+     * @author XUAN HOAN
+     */
+    public static class StmtExpr extends Expr {
+        /** Câu lệnh được bọc bên trong biểu thức */
+        public final Stmt statement;
+
+        /**
+         * Khởi tạo biểu thức bọc câu lệnh.
+         * 
+         * @param statement Câu lệnh cần bọc
+         */
+        public StmtExpr(Stmt statement) {
+            this.statement = statement;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitStmtExpr(this);
+        }
+    }
+
+    /**
+     * Biểu thức Tuple đại diện cho danh sách nhiều biểu thức ngăn cách bởi dấu phẩy đặt trong dấu ngoặc đơn (ví dụ: (10, 20)).
+     * 
+     * @author XUAN HOAN
+     */
+    public static class Tuple extends Expr {
+        /** Danh sách các biểu thức thành phần trong Tuple */
+        public final List<Expr> expressions;
+
+        /**
+         * Khởi tạo một biểu thức Tuple.
+         * 
+         * @param expressions Danh sách các biểu thức thành phần
+         */
+        public Tuple(List<Expr> expressions) {
+            this.expressions = expressions;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitTupleExpr(this);
         }
     }
 }

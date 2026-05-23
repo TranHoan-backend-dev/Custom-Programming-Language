@@ -280,6 +280,45 @@ public class Verify12Parser {
         }
 
         /**
+         * Chuyển đổi biểu thức truy cập thuộc tính/phương thức sang chuỗi.
+         * 
+         * @param expr Biểu thức truy cập thuộc tính/phương thức
+         * @return Chuỗi biểu diễn biểu thức truy cập
+         */
+        @Override
+        public String visitGetExpr(Expr.Get expr) {
+            return expr.object.accept(this) + "." + expr.name.lexeme();
+        }
+
+        /**
+         * Chuyển đổi biểu thức StmtExpr (biểu thức bọc câu lệnh) sang chuỗi.
+         * 
+         * @param expr Biểu thức StmtExpr
+         * @return Chuỗi biểu diễn câu lệnh được bọc bên trong
+         */
+        @Override
+        public String visitStmtExpr(Expr.StmtExpr expr) {
+            return expr.statement.accept(this);
+        }
+
+        /**
+         * Chuyển đổi biểu thức Tuple nhiều giá trị sang chuỗi.
+         * 
+         * @param expr Biểu thức Tuple
+         * @return Chuỗi biểu diễn Tuple (ví dụ: (10, 20))
+         */
+        @Override
+        public String visitTupleExpr(Expr.Tuple expr) {
+            StringBuilder sb = new StringBuilder("(");
+            for (int i = 0; i < expr.expressions.size(); i++) {
+                sb.append(expr.expressions.get(i).accept(this));
+                if (i < expr.expressions.size() - 1) sb.append(", ");
+            }
+            sb.append(")");
+            return sb.toString();
+        }
+
+        /**
          * Chuyển đổi câu lệnh vòng lặp while sang chuỗi.
          * 
          * @param stmt Câu lệnh while

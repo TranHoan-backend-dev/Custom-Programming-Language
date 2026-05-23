@@ -33,6 +33,7 @@ public class Parser {
 
     /**
      * Phương thức chính thực hiện phân tích cú pháp toàn bộ chương trình.
+     * Hỗ trợ bắt lỗi dấu ngoặc đóng dư thừa ở cấp cao nhất để ngăn ngừa lặp vô hạn.
      * 
      * @return Danh sách các câu lệnh {@link Stmt} tương ứng với cây AST của chương trình
      */
@@ -40,6 +41,10 @@ public class Parser {
         List<Stmt> statements = new ArrayList<>();
         while (!isAtEnd()) {
             try {
+                if (check(TokenType.RIGHT_RACE)) {
+                    Token brace = advance();
+                    throw error(brace, "Dấu ngoặc nhọn đóng '}' không hợp lệ ngoài khối lệnh.");
+                }
                 Stmt decl = declaration();
                 if (decl != null) {
                     statements.add(decl);
@@ -132,6 +137,13 @@ public class Parser {
      * 
      * @return Đối tượng {@link Stmt.Var}
      */
+    /**
+     * Phân tích khai báo biến hoặc hằng số.
+     * Hỗ trợ khai báo biến thông thường và khai báo giải cấu trúc Tuple (destructuring) dạng `biến (a, b) = biểu_thức;`.
+     * 
+     * @return Đối tượng {@link Stmt.Var} đại diện cho câu lệnh khai báo biến
+     * @throws ParseError nếu phát hiện lỗi cú pháp trong quá trình phân tích
+     */
     private Stmt varDecl() {
         Token keyword = advance(); // VAR hoặc CONST
         Token mutToken = null;
@@ -143,11 +155,29 @@ public class Parser {
         Token type = null;
         Token name;
         
-        if (isTypeSpecified()) {
-            type = type();
-            name = consume(TokenType.IDENTIFIER, "Yêu cầu tên biến sau kiểu dữ liệu.");
+        if (check(TokenType.LEFT_PAREN)) {
+            consume(TokenType.LEFT_PAREN, "Yêu cầu dấu '(' để bắt đầu khai báo giải cấu trúc (destructuring).");
+            StringBuilder nameBuilder = new StringBuilder("(");
+            boolean first = true;
+            while (!check(TokenType.RIGHT_PAREN) && !isAtEnd()) {
+                if (!first) {
+                    consume(TokenType.COMMA, "Yêu cầu dấu ',' ngăn cách giữa các tên biến.");
+                    nameBuilder.append(", ");
+                }
+                first = false;
+                Token varName = consume(TokenType.IDENTIFIER, "Yêu cầu tên biến trong giải cấu trúc.");
+                nameBuilder.append(varName.lexeme());
+            }
+            consume(TokenType.RIGHT_PAREN, "Yêu cầu dấu ')' để kết thúc khai báo giải cấu trúc.");
+            nameBuilder.append(")");
+            name = new Token(TokenType.IDENTIFIER, nameBuilder.toString());
         } else {
-            name = consume(TokenType.IDENTIFIER, "Yêu cầu tên biến.");
+            if (isTypeSpecified()) {
+                type = type();
+                name = consume(TokenType.IDENTIFIER, "Yêu cầu tên biến sau kiểu dữ liệu.");
+            } else {
+                name = consume(TokenType.IDENTIFIER, "Yêu cầu tên biến.");
+            }
         }
         
         Expr initializer = null;
@@ -172,6 +202,52 @@ public class Parser {
      * @return Token được ghép chuỗi kiểu đầy đủ để tương thích với AST hiện có
      */
     private Token type() {
+        if (match(TokenType.LEFT_PAREN)) {
+            StringBuilder builder = new StringBuilder("(");
+            if (!check(TokenType.RIGHT_PAREN)) {
+                do {
+                    Token itemType = type();
+                    Token itemName = consume(TokenType.IDENTIFIER, "Yêu cầu tên trường trong Tuple.");
+                    builder.append(itemType.lexeme()).append(" ").append(itemName.lexeme());
+                } while (match(TokenType.COMMA) && appendComma(builder));
+            }
+            consume(TokenType.RIGHT_PAREN, "Yêu cầu dấu ')' để đóng kiểu Tuple.");
+            builder.append(")");
+            
+            if (match(TokenType.QUESTION)) {
+                builder.append("?");
+            }
+            
+            return new Token(TokenType.IDENTIFIER, builder.toString());
+        }
+        
+        if (checkFunctionType()) {
+            Token firstToken = advance();
+            StringBuilder builder = new StringBuilder(firstToken.lexeme());
+            consume(TokenType.LEFT_PAREN, "Yêu cầu dấu '(' sau từ khóa hàm.");
+            builder.append("(");
+            if (!check(TokenType.RIGHT_PAREN)) {
+                do {
+                    Token paramType = type();
+                    builder.append(paramType.lexeme());
+                } while (match(TokenType.COMMA) && appendComma(builder));
+            }
+            consume(TokenType.RIGHT_PAREN, "Yêu cầu dấu ')' để đóng danh sách tham số kiểu hàm.");
+            builder.append(")");
+            
+            consume(TokenType.ARROW, "Yêu cầu toán tử '->' để chỉ định kiểu trả về.");
+            builder.append(" -> ");
+            
+            Token returnType = type();
+            builder.append(returnType.lexeme());
+            
+            if (match(TokenType.QUESTION)) {
+                builder.append("?");
+            }
+            
+            return new Token(TokenType.IDENTIFIER, builder.toString());
+        }
+        
         Token first = peek();
         if (checkTypeKeyword()) {
             Token typeToken = advance();
@@ -194,6 +270,23 @@ public class Parser {
             return new Token(typeToken.type(), builder.toString());
         }
         throw error(peek(), "Yêu cầu kiểu dữ liệu hợp lệ.");
+    }
+
+    /**
+     * Kiểm tra xem token tiếp theo có bắt đầu một khai báo kiểu hàm (function type) hay không.
+     * Kiểm tra từ khóa hàm (hàm/function/func) kết hợp dấu mở ngoặc đơn '('.
+     * 
+     * @return {@code true} nếu là kiểu hàm, ngược lại là {@code false}
+     */
+    private boolean checkFunctionType() {
+        if (isAtEnd()) return false;
+        Token first = peek();
+        boolean isFuncKeyword = (first.type() == TokenType.FUNCTION) || 
+                               (first.type() == TokenType.IDENTIFIER && "func".equals(first.lexeme()));
+        if (!isFuncKeyword) return false;
+        
+        if (current + 1 >= tokens.size()) return false;
+        return tokens.get(current + 1).type() == TokenType.LEFT_PAREN;
     }
 
     /**
@@ -248,11 +341,13 @@ public class Parser {
 
     /**
      * Phân tích câu lệnh vòng lặp 'lặp'.
+     * Tiêu thụ từ khóa 'thì' (then) nếu có sau biểu thức điều kiện.
      * 
      * @return Đối tượng {@link Stmt.While}
      */
     private Stmt loopStatement() {
         Expr condition = expression();
+        match(TokenType.THEN);
         Stmt body = statement();
         return new Stmt.While(condition, body);
     }
@@ -294,6 +389,12 @@ public class Parser {
         
         List<Stmt.SwitchCase> cases = new ArrayList<>();
         while (!check(TokenType.RIGHT_RACE) && !isAtEnd()) {
+            while (match(TokenType.SEMICOLON)) {
+                // Bỏ qua các dấu chấm phẩy trống hoặc dòng trống trong khối 'trường_hợp'
+            }
+            if (check(TokenType.RIGHT_RACE)) {
+                break;
+            }
             cases.add(switchCase());
         }
         consume(TokenType.RIGHT_RACE, "Yêu cầu dấu '}' để đóng khối 'trường_hợp'.");
@@ -309,11 +410,19 @@ public class Parser {
     private Stmt.SwitchCase switchCase() {
         List<Expr> patterns = new ArrayList<>();
         do {
-            patterns.add(expression());
+            patterns.add(and());
         } while (match(TokenType.OR));
         
         consume(TokenType.ARROW, "Yêu cầu toán tử '->' sau các mẫu khớp.");
-        Stmt body = statement();
+        
+        Stmt body;
+        if (check(TokenType.LEFT_RACE)) {
+            body = statement();
+        } else {
+            Expr expr = expression();
+            match(TokenType.SEMICOLON); // Tùy chọn tiêu thụ dấu chấm phẩy
+            body = new Stmt.Expression(expr);
+        }
         
         return new Stmt.SwitchCase(patterns, body);
     }
@@ -363,6 +472,20 @@ public class Parser {
     private List<Stmt> block() {
         List<Stmt> statements = new ArrayList<>();
         while (!check(TokenType.RIGHT_RACE) && !isAtEnd()) {
+            if (peek().type() != TokenType.FUNCTION && !checkVarDecl()) {
+                int start = current;
+                try {
+                    Expr expr = expression();
+                    if (check(TokenType.RIGHT_RACE)) {
+                        statements.add(new Stmt.Expression(expr));
+                        break;
+                    } else {
+                        current = start;
+                    }
+                } catch (Exception e) {
+                    current = start;
+                }
+            }
             Stmt decl = declaration();
             if (decl != null) {
                 statements.add(decl);
@@ -533,6 +656,9 @@ public class Parser {
         while (true) {
             if (match(TokenType.LEFT_PAREN)) {
                 expr = finishCall(expr);
+            } else if (match(TokenType.DOT)) {
+                Token name = consume(TokenType.IDENTIFIER, "Yêu cầu tên thuộc tính hoặc phương thức sau dấu '.'.");
+                expr = new Expr.Get(expr, name);
             } else {
                 break;
             }
@@ -559,24 +685,45 @@ public class Parser {
 
     /**
      * Phân tích giá trị nguyên tử (Primary Expression).
+     * Hỗ trợ các kiểu dữ liệu cơ bản, hằng số, biến, khối biểu thức lồng và Tuple nhiều giá trị.
      * 
-     * @return Đối tượng {@link Expr} nguyên tử
+     * @return Đối tượng {@link Expr} tương ứng với biểu thức nguyên tử
+     * @throws ParseError nếu phát hiện biểu thức không hợp lệ hoặc thiếu dấu ngoặc đóng
      */
     private Expr primary() {
         if (match(TokenType.FALSE)) return new Expr.Literal(false);
         if (match(TokenType.TRUE)) return new Expr.Literal(true);
         if (match(TokenType.NULL)) return new Expr.Literal(null);
         
+        if (match(TokenType.IF, TokenType.SWITCH)) {
+            current--; // Quay lại để statement() nhận biết từ khóa
+            Stmt stmt = statement();
+            return new Expr.StmtExpr(stmt);
+        }
+        
         if (match(TokenType.LITERAL_INTEGER, TokenType.LITERAL_DOUBLE, TokenType.LITERAL_FLOAT, TokenType.LITERAL_STRING, TokenType.LITERAL_CHAR)) {
             return new Expr.Literal(getLiteralValue(previous()));
         }
         
-        if (match(TokenType.IDENTIFIER)) {
+        if (match(TokenType.IDENTIFIER, TokenType.IN)) {
+            // Hỗ trợ cả TokenType.IN làm định danh trong biểu thức để cho phép gọi hàm xuất chuẩn 'in(...)' của tiếng Việt
             return new Expr.Variable(previous());
         }
         
         if (match(TokenType.LEFT_PAREN)) {
+            if (match(TokenType.RIGHT_PAREN)) {
+                return new Expr.Tuple(new ArrayList<>());
+            }
             Expr expr = expression();
+            if (match(TokenType.COMMA)) {
+                List<Expr> expressions = new ArrayList<>();
+                expressions.add(expr);
+                do {
+                    expressions.add(expression());
+                } while (match(TokenType.COMMA));
+                consume(TokenType.RIGHT_PAREN, "Yêu cầu dấu ')' để đóng Tuple.");
+                return new Expr.Tuple(expressions);
+            }
             consume(TokenType.RIGHT_PAREN, "Yêu cầu dấu ')' sau biểu thức nhóm.");
             return new Expr.Grouping(expr);
         }
