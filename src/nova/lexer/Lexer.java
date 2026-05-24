@@ -327,6 +327,11 @@ public class Lexer {
             if (currentLocale == null) {
                 currentLocale = registeredKeyword.local();
             } else if (!currentLocale.equals(registeredKeyword.local())) {
+                // Special case: 'in' is a built-in function in Vietnamese, but an EN keyword.
+                // If locale is 'vi' and we see 'in', treat it as an identifier.
+                if (currentLocale.equals("vi") && lexeme.equals("in")) {
+                    return new Token(TokenType.IDENTIFIER, lexeme);
+                }
                 throw new LexerError("Ngon ngu khong nhat quan. Du kien: " + currentLocale + ", nhung tim thay: " + registeredKeyword.local() + " (tu khoa: '" + lexeme + "') tai dong " + line + ", cot " + col);
             }
             return new Token(registeredKeyword.type(), lexeme);

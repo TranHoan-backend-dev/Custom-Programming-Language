@@ -96,7 +96,7 @@ public class ParserTest {
         System.out.print("Đang chạy kiểm thử Phần I (Entry Point)... ");
         
         // Happy Case 1: Tiếng Anh
-        var src1 = "hàm main() -> void {}";
+        var src1 = "function main() -> void {}";
         var p1 = parseSource(src1);
         List<Stmt> ast1 = p1.parse();
         ParserAssert.assertTrue(!p1.hasErrors());
@@ -110,7 +110,7 @@ public class ParserTest {
         ParserAssert.assertEquals("Hàm: main\nTham số: Không có\nKiểu trả về: trống\nThân hàm: {\n}", printAST(ast2));
 
         // Edge Case 1: Thiếu dấu ngoặc đơn ()
-        var srcErr = "hàm main -> void {}";
+        var srcErr = "hàm main -> trống {}";
         Parser pErr = parseSource(srcErr);
         pErr.parse();
         ParserAssert.assertTrue(pErr.hasErrors());
@@ -204,9 +204,9 @@ public class ParserTest {
 
         // Happy Case 1: Generic lồng nhau và Nullable
         String src1 = """
-            biến DanhSách<số_nguyên> ds = null;
-            biến BảnĐồ<chuỗi, DanhSách<số_nguyên>> map = null;
-            biến chuỗi? tenNullable = null;
+            biến DanhSách<số_nguyên> ds = k_tồn_tại;
+            biến BảnĐồ<chuỗi, DanhSách<số_nguyên>> map = k_tồn_tại;
+            biến chuỗi? tenNullable = k_tồn_tại;
             """;
         Parser p1 = parseSource(src1);
         List<Stmt> ast1 = p1.parse();
@@ -219,7 +219,7 @@ public class ParserTest {
         );
 
         // Edge Case: Generic không đóng ngoặc '>'
-        String srcErr = "biến DanhSách<số_nguyên ds = null;";
+        String srcErr = "biến DanhSách<số_nguyên ds = k_tồn_tại;";
         Parser pErr = parseSource(srcErr);
         pErr.parse();
         ParserAssert.assertTrue(pErr.hasErrors());
@@ -234,14 +234,11 @@ public class ParserTest {
     private static void testPart5VariablesAndConstants() {
         System.out.print("Đang chạy kiểm thử Phần V (Variables & Constants)... ");
 
-        // Happy Case 1: Các loại khai báo
+        // Happy Case 1: Các loại khai báo (Tiếng Việt)
         String src1 = """
             biến x = 1;
             biến khả_biến y = 2;
             hằng_số z = 3;
-            var a = 4;
-            var mut b = 5;
-            const c = 6;
             """;
         Parser p1 = parseSource(src1);
         List<Stmt> ast1 = p1.parse();
@@ -249,11 +246,24 @@ public class ParserTest {
         ParserAssert.assertEquals(
             "Khai báo biến [x] (Tự suy luận) Khởi tạo: 1\n" +
             "Khai báo khả_biến [y] (Tự suy luận) Khởi tạo: 2\n" +
-            "Khai báo hằng_số [z] (Tự suy luận) Khởi tạo: 3\n" +
+            "Khai báo hằng_số [z] (Tự suy luận) Khởi tạo: 3", 
+            printAST(ast1)
+        );
+
+        // Happy Case 2: Các loại khai báo (Tiếng Anh)
+        String src2 = """
+            var a = 4;
+            var mut b = 5;
+            const c = 6;
+            """;
+        Parser p2 = parseSource(src2);
+        List<Stmt> ast2 = p2.parse();
+        ParserAssert.assertTrue(!p2.hasErrors());
+        ParserAssert.assertEquals(
             "Khai báo var [a] (Tự suy luận) Khởi tạo: 4\n" +
             "Khai báo mut [b] (Tự suy luận) Khởi tạo: 5\n" +
             "Khai báo const [c] (Tự suy luận) Khởi tạo: 6", 
-            printAST(ast1)
+            printAST(ast2)
         );
 
         // Edge Case 1: Hằng số không khởi tạo
@@ -481,7 +491,7 @@ public class ParserTest {
         // Happy Case 1: Hàm trả về tuple (nhiều giá trị)
         String src1 = """
             hàm chia_có_dư(số_nguyên a, số_nguyên b) -> (số_nguyên thương, số_nguyên dư) {
-                trả_về null;
+                trả_về k_tồn_tại;
             }
             """;
         var p1 = parseSource(src1);

@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Uu tien JAVA_HOME neu co
+JAVA_CMD="java"
+JAVAC_CMD="javac"
+
+if [ -n "$JAVA_HOME" ]; then
+    JAVA_CMD="$JAVA_HOME/bin/java"
+    JAVAC_CMD="$JAVA_HOME/bin/javac"
+fi
+
+# Kiem tra lenh clean
+if [ "$1" = "clean" ]; then
+    echo "[Nova CLI] Dang don dep thu muc out..."
+    rm -rf "$DIR/out"
+    echo "[Nova CLI] Clean hoan tat!"
+    exit 0
+fi
+
+# Kiem tra lenh build
+if [ "$1" = "build" ]; then
+    echo "[Nova CLI] Dang bien dich ma nguon Interpreter..."
+    mkdir -p "$DIR/out"
+    "$JAVAC_CMD" -encoding UTF-8 -d "$DIR/out" -sourcepath "$DIR/src" "$DIR/src/Main.java"
+    echo "[Nova CLI] Build hoan tat!"
+    exit 0
+fi
+
+# Kiem tra lenh test-core
+if [ "$1" = "test-core" ]; then
+    echo "[Nova CLI] Dang bien dich va chay test core (Java)..."
+    mkdir -p "$DIR/out"
+    "$JAVAC_CMD" -encoding UTF-8 -d "$DIR/out" -sourcepath "$DIR/src" "$DIR/src/Main.java"
+    "$JAVAC_CMD" -encoding UTF-8 -cp "$DIR/out" -d "$DIR/out" "$DIR/test/parser/ParserAssert.java" "$DIR/test/parser/ParserTest.java"
+    echo "[Nova CLI] Dang chay ParserTest..."
+    "$JAVA_CMD" -cp "$DIR/out" nova.parser.ParserTest
+    exit 0
+fi
+
+# Biên dịch ngầm nếu thư mục out chưa tồn tại
+if [ ! -d "$DIR/out" ]; then
+    echo "[Nova CLI] Khoi tao build lan dau..."
+    mkdir -p "$DIR/out"
+    "$JAVAC_CMD" -encoding UTF-8 -d "$DIR/out" -sourcepath "$DIR/src" "$DIR/src/Main.java"
+fi
+
+"$JAVA_CMD" -cp "$DIR/out" Main "$@"

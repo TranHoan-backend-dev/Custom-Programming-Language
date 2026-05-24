@@ -2,21 +2,49 @@
 setlocal
 set DIR=%~dp0
 
-:: Tìm thư mục chứa javac (phiên bản 17) để sử dụng đúng java.exe tương ứng
+:: Uu tien JAVA_HOME neu co
 set JAVA_CMD=java
 set JAVAC_CMD=javac
+
+if defined JAVA_HOME (
+    set JAVA_CMD="%JAVA_HOME%\bin\java.exe"
+    set JAVAC_CMD="%JAVA_HOME%\bin\javac.exe"
+    goto :check_args
+)
+
 for %%I in (javac.exe) do set JAVAC_PATH=%%~dp$PATH:I
 if defined JAVAC_PATH (
     set JAVA_CMD="%JAVAC_PATH%java.exe"
     set JAVAC_CMD="%JAVAC_PATH%javac.exe"
 )
 
-:: Kiểm tra lệnh build
+:check_args
+
+:: Kiem tra lenh clean
+if "%~1"=="clean" (
+    echo [Nova CLI] Dang don dep thu muc out...
+    if exist "%DIR%out" rd /s /q "%DIR%out"
+    echo [Nova CLI] Clean hoan tat!
+    goto :EOF
+)
+
+:: Kiem tra lenh build
 if "%~1"=="build" (
     echo [Nova CLI] Dang bien dich ma nguon Interpreter...
     if not exist "%DIR%out" mkdir "%DIR%out"
     %JAVAC_CMD% -encoding UTF-8 -d "%DIR%out" -sourcepath "%DIR%src" "%DIR%src\Main.java"
     echo [Nova CLI] Build hoan tat!
+    goto :EOF
+)
+
+:: Kiem tra lenh test-core
+if "%~1"=="test-core" (
+    echo [Nova CLI] Dang bien dich va chay test core Java...
+    if not exist "%DIR%out" mkdir "%DIR%out"
+    %JAVAC_CMD% -encoding UTF-8 -d "%DIR%out" -sourcepath "%DIR%src" "%DIR%src\Main.java"
+    %JAVAC_CMD% -encoding UTF-8 -cp "%DIR%out" -d "%DIR%out" "%DIR%test\parser\ParserAssert.java" "%DIR%test\parser\ParserTest.java"
+    echo [Nova CLI] Dang chay ParserTest...
+    %JAVA_CMD% -cp "%DIR%out" nova.parser.ParserTest
     goto :EOF
 )
 

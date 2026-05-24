@@ -47,29 +47,70 @@ Xem chi tiết kế hoạch 6 giai đoạn phát triển tại [Lộ trình Phá
 Nova cung cấp một CLI mạnh mẽ giúp bạn dễ dàng khởi tạo, quản lý và chạy code. Điểm đặc biệt của Nova là **tính nghiêm ngặt về ngôn ngữ**: một project hoặc một file code chỉ được phép dùng đúng một ngôn ngữ (Tiếng Việt hoặc Tiếng Anh), không được trộn lẫn!
 
 ### 1. Khởi tạo Project (Khuyên dùng)
+
 Để tạo một project hoàn chỉnh với cấu trúc chuẩn, chạy lệnh:
+
 ```text
 .\nova.bat init
 ```
+
 CLI sẽ hỏi tên project và ngôn ngữ lập trình bạn muốn sử dụng (vi/en). Sau đó, nó sẽ tự động tạo:
+
 - Thư mục `src/`: chứa mã nguồn (ví dụ `main.nova`).
 - Thư mục `resources/`: chứa file cấu hình `application.yaml` khóa cứng ngôn ngữ đã chọn.
 
 *Khi chạy project này, nếu bạn gõ nhầm từ khóa của ngôn ngữ khác (ví dụ: đang dùng `vi` nhưng gõ chữ `if`), Nova sẽ báo lỗi không nhất quán ngôn ngữ.*
 
-### 2. Chạy chương trình
-Để chạy một file code `.nova`, bạn có thể chỉ định đường dẫn tới file đó (có thể bỏ đuôi `.nova`):
+### 2. Chạy toàn bộ App (Khuyên dùng)
+
+Khi bạn đang đứng ở thư mục gốc của project (chứa `src` và `resources`), chỉ cần chạy lệnh:
+
+```text
+.\nova.bat run
+```
+
+Lệnh này sẽ tự động đọc cấu hình `application.yaml` để xác nhận ngôn ngữ, sau đó tìm và chạy trực tiếp file `src/main.nova`. (Lưu ý: `main.nova` sẽ được tự động tạo sẵn một phương thức `main` để chạy app khi bạn dùng lệnh `init`).
+
+### 3. Chạy file đơn lẻ (Script)
+
+Để chạy một file code `.nova` bất kỳ, bạn có thể chỉ định đường dẫn tới file đó (có thể bỏ đuôi `.nova`):
+
 ```text
 .\nova.bat <tên_file>
 ```
+
 *(Ví dụ: `.\nova.bat MyProject/src/main.nova`)*
 
-**Chạy file đơn lẻ (Script):**
 Nếu bạn chỉ tạo một file `.nova` nhỏ lẻ bên ngoài project và chạy, Nova vẫn sẽ bảo vệ tính nhất quán! Nó sẽ lấy **từ khóa đầu tiên** xuất hiện trong file làm ngôn ngữ chuẩn. Nếu các dòng sau dùng từ khóa của ngôn ngữ khác, lỗi sẽ lập tức được báo.
 
-### 3. Lệnh khác
-Để biên dịch lại trình thông dịch (build code java), chạy:
-```text
-.\nova.bat build
-```
-*(Lưu ý: CLI sẽ tự động build ở lần chạy đầu tiên nếu chưa có thư mục `out`)*
+### 4. Các lệnh tiện ích khác
+
+Ngoài ra, CLI còn cung cấp nhiều công cụ đắc lực cho vòng đời phát triển phần mềm:
+
+- **Kiểm tra mã nguồn (Syntax & Semantic Check):** 
+  ```text
+  .\nova.bat check
+  ```
+  Lệnh này sẽ phân tích cú pháp toàn bộ `src/main.nova` để tìm các lỗi sai cú pháp, lỗi trộn lẫn ngôn ngữ hoặc các hàm/biến không hợp lệ mà *không cần thực thi* code.
+
+- **Chạy kiểm thử (Unit Test):**
+  ```text
+  .\nova.bat test
+  ```
+  CLI sẽ tự động quét toàn bộ thư mục `src/` tìm các file kết thúc bằng đuôi `_test.nova` và thực thi chúng. Cuối cùng, CLI in ra bảng tổng kết bao nhiêu test PASS và bao nhiêu FAIL.
+
+- **Xem phiên bản:**
+  ```text
+  .\nova.bat version
+  ```
+
+- **Trợ giúp:**
+  ```text
+  .\nova.bat help
+  ```
+
+- **Biên dịch trình thông dịch (Dành cho người phát triển ngôn ngữ Nova):**
+  ```text
+  .\nova.bat build
+  ```
+  *(Lưu ý: CLI sẽ tự động build ở lần chạy đầu tiên nếu chưa có thư mục `out`)*
