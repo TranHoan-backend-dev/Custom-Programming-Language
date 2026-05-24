@@ -150,7 +150,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
      */
     public void interpret(List<Stmt> statements) {
         try {
-            for (Stmt statement : statements) {
+            for (var statement : statements) {
                 execute(statement);
             }
         } catch (RuntimeError error) {

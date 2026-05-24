@@ -10,6 +10,8 @@ public class Lexer {
     private int line = 1; // vi tri cua cac dong
     private static final KeywordRegistry registry = new KeywordRegistry();
     private TokenType lastTokenType = null;
+    private String expectedLocale = null;
+    private String currentLocale = null;
 
     static {
         DefaultKeyword.load(registry);
@@ -17,6 +19,12 @@ public class Lexer {
 
     public Lexer(String src) {
         this.src = src;
+    }
+
+    public Lexer(String src, String expectedLocale) {
+        this.src = src;
+        this.expectedLocale = expectedLocale;
+        this.currentLocale = expectedLocale;
     }
 
     public Token nextToken() throws LexerError {
@@ -304,7 +312,7 @@ public class Lexer {
         return new Token(TokenType.LITERAL_STRING, builder.toString());
     }
 
-    private Token readIdentifierOrKeyword(char firstChar) {
+    private Token readIdentifierOrKeyword(char firstChar) throws LexerError {
         var builder = new StringBuilder();
         builder.append(firstChar);
 
@@ -316,6 +324,11 @@ public class Lexer {
 
         var registeredKeyword = registry.getKeyword(lexeme);
         if (registeredKeyword != null) {
+            if (currentLocale == null) {
+                currentLocale = registeredKeyword.local();
+            } else if (!currentLocale.equals(registeredKeyword.local())) {
+                throw new LexerError("Ngon ngu khong nhat quan. Du kien: " + currentLocale + ", nhung tim thay: " + registeredKeyword.local() + " (tu khoa: '" + lexeme + "') tai dong " + line + ", cot " + col);
+            }
             return new Token(registeredKeyword.type(), lexeme);
         }
 

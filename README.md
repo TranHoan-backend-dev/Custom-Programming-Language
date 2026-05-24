@@ -42,3 +42,34 @@ Vui lòng xem [Hướng dẫn sử dụng Nova REPL](docs/repl_demo.md) để bi
 
 Xem chi tiết kế hoạch 6 giai đoạn phát triển tại [Lộ trình Phát triển CPL (Nova Lang)](roadmap.md).
 
+## 🚀 Hướng dẫn sử dụng ngôn ngữ (Nova CLI)
+
+Nova cung cấp một CLI mạnh mẽ giúp bạn dễ dàng khởi tạo, quản lý và chạy code. Điểm đặc biệt của Nova là **tính nghiêm ngặt về ngôn ngữ**: một project hoặc một file code chỉ được phép dùng đúng một ngôn ngữ (Tiếng Việt hoặc Tiếng Anh), không được trộn lẫn!
+
+### 1. Khởi tạo Project (Khuyên dùng)
+Để tạo một project hoàn chỉnh với cấu trúc chuẩn, chạy lệnh:
+```text
+.\nova.bat init
+```
+CLI sẽ hỏi tên project và ngôn ngữ lập trình bạn muốn sử dụng (vi/en). Sau đó, nó sẽ tự động tạo:
+- Thư mục `src/`: chứa mã nguồn (ví dụ `main.nova`).
+- Thư mục `resources/`: chứa file cấu hình `application.yaml` khóa cứng ngôn ngữ đã chọn.
+
+*Khi chạy project này, nếu bạn gõ nhầm từ khóa của ngôn ngữ khác (ví dụ: đang dùng `vi` nhưng gõ chữ `if`), Nova sẽ báo lỗi không nhất quán ngôn ngữ.*
+
+### 2. Chạy chương trình
+Để chạy một file code `.nova`, bạn có thể chỉ định đường dẫn tới file đó (có thể bỏ đuôi `.nova`):
+```text
+.\nova.bat <tên_file>
+```
+*(Ví dụ: `.\nova.bat MyProject/src/main.nova`)*
+
+**Chạy file đơn lẻ (Script):**
+Nếu bạn chỉ tạo một file `.nova` nhỏ lẻ bên ngoài project và chạy, Nova vẫn sẽ bảo vệ tính nhất quán! Nó sẽ lấy **từ khóa đầu tiên** xuất hiện trong file làm ngôn ngữ chuẩn. Nếu các dòng sau dùng từ khóa của ngôn ngữ khác, lỗi sẽ lập tức được báo.
+
+### 3. Lệnh khác
+Để biên dịch lại trình thông dịch (build code java), chạy:
+```text
+.\nova.bat build
+```
+*(Lưu ý: CLI sẽ tự động build ở lần chạy đầu tiên nếu chưa có thư mục `out`)*

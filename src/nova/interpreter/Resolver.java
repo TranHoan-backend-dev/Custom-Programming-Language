@@ -77,7 +77,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
      * @return Danh sách lỗi ngữ nghĩa phát hiện được (nếu có)
      */
     public List<SemanticError> resolve(List<Stmt> statements) {
-        for (Stmt statement : statements) {
+        for (var statement : statements) {
             resolve(statement);
         }
         return errors;
