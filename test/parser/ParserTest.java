@@ -657,7 +657,7 @@ public class ParserTest {
 
         @Override
         public String visitCallExpr(Expr.Call expr) {
-            var sb = new StringBuilder("gọi_hàm ").append(expr.callee.accept(this)).append(" với (");
+            var sb = new StringBuilder("Gọi_hàm ").append(expr.callee.accept(this)).append(" với (");
             for (int i = 0; i < expr.arguments.size(); i++) {
                 sb.append(expr.arguments.get(i).accept(this));
                 if (i < expr.arguments.size() - 1) sb.append(", ");
