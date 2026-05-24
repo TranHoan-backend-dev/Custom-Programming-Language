@@ -111,7 +111,7 @@ public class ParserTest {
 
         // Edge Case 1: Thiếu dấu ngoặc đơn ()
         var srcErr = "hàm main -> void {}";
-        Parvarser pErr = parseSource(srcErr);
+        Parser pErr = parseSource(srcErr);
         pErr.parse();
         ParserAssert.assertTrue(pErr.hasErrors());
 

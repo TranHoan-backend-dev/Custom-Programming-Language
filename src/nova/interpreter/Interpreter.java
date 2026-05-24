@@ -44,7 +44,13 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
      */
     public Interpreter(java.io.PrintStream out) {
         this.out = out;
+        defineBuiltInFunctions();
+    }
 
+    /**
+     * Đăng ký các hàm dựng sẵn vào môi trường toàn cục.
+     */
+    private void defineBuiltInFunctions() {
         // Đăng ký các hàm in tiêu chuẩn tiếng Anh
         globals.define("print", new NovaCallable() {
             @Override
@@ -91,6 +97,29 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         });
 
         globals.define("in_định_dạng", globals.getByName("printf"));
+    }
+
+    /**
+     * Đặt lại môi trường thực thi (xóa sạch biến cục bộ, toàn cục, chỉ giữ lại các hàm dựng sẵn).
+     */
+    public void reset() {
+        this.globals.getValues().clear();
+        this.environment = this.globals;
+        defineBuiltInFunctions();
+    }
+
+    /**
+     * Lấy danh sách các biến toàn cục hiện tại.
+     */
+    public Map<String, Object> getGlobals() {
+        return this.globals.getValues();
+    }
+
+    /**
+     * Đánh giá biểu thức dành riêng cho REPL để có thể in kết quả.
+     */
+    public Object evaluateExpressionForRepl(Expr expr) {
+        return evaluate(expr);
     }
 
     /**

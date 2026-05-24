@@ -31,6 +31,13 @@ Dưới đây là chi tiết các phần đặc tả ngôn ngữ CPL được ch
 
 ---
 
+## ⌨️ Chạy tương tác (REPL)
+
+Bạn có thể chạy thử mã Nova ngay lập tức với Nova REPL (Read-Eval-Print Loop).
+Vui lòng xem [Hướng dẫn sử dụng Nova REPL](docs/repl_demo.md) để biết thêm chi tiết.
+
+---
+
 ## 🗺️ Lộ trình Phát triển (Roadmap)
 
 Xem chi tiết kế hoạch 6 giai đoạn phát triển tại [Lộ trình Phát triển CPL (Nova Lang)](roadmap.md).

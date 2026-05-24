@@ -139,4 +139,12 @@ public class Environment {
         }
         return environment;
     }
+
+    /**
+     * Trả về bảng ánh xạ các biến hiện tại trong môi trường này.
+     * @return Map chứa các biến.
+     */
+    public Map<String, Object> getValues() {
+        return values;
+    }
 }
