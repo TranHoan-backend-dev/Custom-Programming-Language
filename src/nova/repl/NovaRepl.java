@@ -148,11 +148,6 @@ public class NovaRepl {
             }
             Parser parser = new Parser(tokens);
             List<Stmt> statements = parser.parse();
-            out.println("Debug: statements.size() = " + statements.size());
-            for (var s : statements) {
-                out.println("Debug: stmt = " + s.getClass().getSimpleName());
-            }
-
             // Xử lý in kết quả trực tiếp cho REPL nếu là ExpressionStmt
             if (statements.size() == 1 && statements.getFirst() instanceof Stmt.Expression) {
                 Object result = interpreter.evaluateExpressionForRepl(((Stmt.Expression) statements.getFirst()).expression);
