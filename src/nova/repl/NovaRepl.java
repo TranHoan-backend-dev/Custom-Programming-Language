@@ -101,12 +101,20 @@ public class NovaRepl {
                 return true;
             case ":vars":
                 Map<String, Object> globals = interpreter.getGlobals();
-                if (globals.isEmpty()) {
+                boolean hasVars = false;
+                for (Object value : globals.values()) {
+                    if (!(value instanceof nova.interpreter.NovaCallable)) {
+                        hasVars = true;
+                        break;
+                    }
+                }
+                
+                if (!hasVars) {
                     out.println("Không có biến nào.");
                 } else {
                     out.println("Các biến toàn cục:");
                     for (Map.Entry<String, Object> entry : globals.entrySet()) {
-                        if (!(entry.getValue() instanceof NovaCallable)) {
+                        if (!(entry.getValue() instanceof nova.interpreter.NovaCallable)) {
                             out.println("  " + entry.getKey() + " = " + Interpreter.stringify(entry.getValue()));
                         }
                     }

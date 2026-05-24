@@ -616,17 +616,17 @@ public class ParserTest {
         public String visitVarStmt(Stmt.Var stmt) {
             var typeStr = stmt.type != null ? " (Kiểu: " + stmt.type.lexeme() + ")" : " (Tự suy luận)";
             var initStr = stmt.initializer != null ? " Khởi tạo: " + stmt.initializer.accept(this) : "";
-            return "khai báo " + stmt.keyword.lexeme() + " [" + stmt.name.lexeme() + "]" + typeStr + initStr;
+            return "Khai báo " + stmt.keyword.lexeme() + " [" + stmt.name.lexeme() + "]" + typeStr + initStr;
         }
 
         @Override
         public String visitReturnStmt(Stmt.Return stmt) {
-            return "trả về" + (stmt.value != null ? " " + stmt.value.accept(this) : "");
+            return "Trả về" + (stmt.value != null ? " " + stmt.value.accept(this) : "");
         }
 
         @Override
         public String visitAssignExpr(Expr.Assign expr) {
-            return "gán " + expr.name.lexeme() + " = " + expr.value.accept(this);
+            return "Gán " + expr.name.lexeme() + " = " + expr.value.accept(this);
         }
 
         @Override
@@ -717,28 +717,28 @@ public class ParserTest {
         @Override
         public String visitForStmt(Stmt.For stmt) {
             if (stmt.isForEach) {
-                return "duyệt " + stmt.name.lexeme() + " của (" + stmt.end.accept(this) + ") " + stmt.body.accept(this);
+                return "Duyệt " + stmt.name.lexeme() + " Của (" + stmt.end.accept(this) + ") " + stmt.body.accept(this);
             }
-            return "duyệt " + stmt.name.lexeme() + " từ (" + stmt.start.accept(this) + " " + stmt.operator.lexeme() + " " + stmt.end.accept(this) + ") " + stmt.body.accept(this);
+            return "Duyệt " + stmt.name.lexeme() + " Từ (" + stmt.start.accept(this) + " " + stmt.operator.lexeme() + " " + stmt.end.accept(this) + ") " + stmt.body.accept(this);
         }
 
         @Override
         public String visitBreakStmt(Stmt.Break stmt) {
-            return "dừng";
+            return "Dừng";
         }
 
         @Override
         public String visitContinueStmt(Stmt.Continue stmt) {
-            return "tiếp";
+            return "Tiếp";
         }
 
         @Override
         public String visitSwitchStmt(Stmt.Switch stmt) {
-            var sb = new StringBuilder("trường_hợp (")
+            var sb = new StringBuilder("Trường_hợp (")
                     .append(stmt.value.accept(this))
                     .append(") {\n");
             for (Stmt.SwitchCase sc : stmt.cases) {
-                sb.append("    các mẫu: ");
+                sb.append("    Các mẫu: ");
                 for (int i = 0; i < sc.patterns.size(); i++) {
                     sb.append(sc.patterns.get(i).accept(this));
                     if (i < sc.patterns.size() - 1) sb.append(" | ");
