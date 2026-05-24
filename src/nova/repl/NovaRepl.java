@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -12,21 +13,22 @@ import nova.lexer.Lexer;
 import nova.lexer.Token;
 import nova.parser.Parser;
 import nova.interpreter.Interpreter;
-import nova.interpreter.NovaCallable;
 import nova.ast.Stmt;
 import nova.interpreter.RuntimeError;
 import nova.lexer.TokenType;
+
 /**
  * Read-Eval-Print Loop (REPL) cho ngôn ngữ Nova.
  */
 public class NovaRepl {
     private static final String PROMPT = ">>> ";
     private static final String MULTILINE_PROMPT = "... ";
-    private static final String HELP_TEXT = "Các lệnh nội bộ của Nova REPL:\n" +
-            "  :help   – Hiển thị trợ giúp này\n" +
-            "  :exit   – Thoát REPL\n" +
-            "  :reset  – Xóa toàn bộ biến môi trường hiện hành\n" +
-            "  :vars   – Hiển thị danh sách các biến đang có trong bộ nhớ";
+    private static final String HELP_TEXT = """
+            Các lệnh nội bộ của Nova REPL:
+              :help   – Hiển thị trợ giúp này
+              :exit   – Thoát REPL
+              :reset  – Xóa toàn bộ biến môi trường hiện hành
+              :vars   – Hiển thị danh sách các biến đang có trong bộ nhớ""";
 
     private final Interpreter interpreter;
     private final List<String> history = new ArrayList<>();
@@ -45,25 +47,25 @@ public class NovaRepl {
 
     public void start() {
         out.println("Nova REPL v1.0. Gõ :help để xem trợ giúp, :exit để thoát.");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        StringBuilder sourceBuilder = new StringBuilder();
-        
+        var reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+        var sourceBuilder = new StringBuilder();
+
         try {
             while (true) {
-                if (sourceBuilder.length() == 0) {
+                if (sourceBuilder.isEmpty()) {
                     out.print(PROMPT);
                 } else {
                     out.print(MULTILINE_PROMPT);
                 }
-                
+
                 String line = reader.readLine();
                 if (line == null) { // EOF (e.g., Ctrl+D)
                     break;
                 }
-                
+
                 String trimmed = line.trim();
-                
-                if (sourceBuilder.length() == 0 && trimmed.startsWith(":")) {
+
+                if (sourceBuilder.isEmpty() && trimmed.startsWith(":")) {
                     if (handleInternalCommand(trimmed)) {
                         continue;
                     } else if (trimmed.equals(":exit")) {
@@ -71,14 +73,14 @@ public class NovaRepl {
                         break;
                     }
                 }
-                
+
                 if (trimmed.endsWith("\\")) {
                     sourceBuilder.append(trimmed, 0, trimmed.length() - 1).append("\n");
-                    continue; 
+                    continue;
                 }
-                
+
                 sourceBuilder.append(line).append("\n");
-                
+
                 // Đoán xem câu lệnh đã hoàn chỉnh chưa dựa trên dấu ngoặc
                 if (!isBalanced(sourceBuilder.toString())) {
                     continue;
@@ -108,7 +110,7 @@ public class NovaRepl {
                         break;
                     }
                 }
-                
+
                 if (!hasVars) {
                     out.println("Không có biến nào.");
                 } else {
@@ -146,10 +148,14 @@ public class NovaRepl {
             }
             Parser parser = new Parser(tokens);
             List<Stmt> statements = parser.parse();
-            
+            out.println("Debug: statements.size() = " + statements.size());
+            for (var s : statements) {
+                out.println("Debug: stmt = " + s.getClass().getSimpleName());
+            }
+
             // Xử lý in kết quả trực tiếp cho REPL nếu là ExpressionStmt
-            if (statements.size() == 1 && statements.get(0) instanceof Stmt.Expression) {
-                Object result = interpreter.evaluateExpressionForRepl(((Stmt.Expression) statements.get(0)).expression);
+            if (statements.size() == 1 && statements.getFirst() instanceof Stmt.Expression) {
+                Object result = interpreter.evaluateExpressionForRepl(((Stmt.Expression) statements.getFirst()).expression);
                 if (result != null) {
                     out.println(Interpreter.stringify(result));
                 }

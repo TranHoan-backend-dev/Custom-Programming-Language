@@ -42,12 +42,16 @@ if "%~1"=="test-core" (
     echo [Nova CLI] Dang bien dich va chay test core Java...
     if not exist "%DIR%out" mkdir "%DIR%out"
     %JAVAC_CMD% -encoding UTF-8 -d "%DIR%out" -sourcepath "%DIR%src" "%DIR%src\Main.java"
-    %JAVAC_CMD% -encoding UTF-8 -cp "%DIR%out" -d "%DIR%out" "%DIR%test\parser\ParserAssert.java" "%DIR%test\parser\ParserTest.java" "%DIR%test\interpreter\InterpreterAssert.java" "%DIR%test\interpreter\InterpreterTest.java"
+    %JAVAC_CMD% -encoding UTF-8 -cp "%DIR%out" -d "%DIR%out" -sourcepath "%DIR%src" "%DIR%test\nova\parser\ParserAssert.java" "%DIR%test\nova\parser\ParserTest.java" "%DIR%test\nova\interpreter\InterpreterAssert.java" "%DIR%test\nova\interpreter\InterpreterTest.java" "%DIR%test\nova\repl\NovaReplTest.java"
     echo [Nova CLI] Dang chay ParserTest...
     %JAVA_CMD% -cp "%DIR%out" nova.parser.ParserTest
     echo --------------------------------------------------
     echo [Nova CLI] Dang chay InterpreterTest...
     %JAVA_CMD% -cp "%DIR%out" nova.interpreter.InterpreterTest
+    echo --------------------------------------------------
+    echo [Nova CLI] Dang chay NovaReplTest...
+    %JAVA_CMD% -cp "%DIR%out" nova.repl.NovaReplTest
+
     goto :EOF
 )
 
