@@ -1,0 +1,76 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Nova",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#builtins"
+    },
+    {
+      "include": "#numbers"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "begin": "/\\*",
+          "end": "\\*/",
+          "name": "comment.block.nova"
+        },
+        {
+          "match": "//.*$",
+          "name": "comment.line.double-slash.nova"
+        }
+      ]
+    },
+    "strings": {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.nova",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.nova"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "match": "\\b(biến|hàm|trả_về|nếu|thì|còn_nếu|không_thì|lặp|duyệt|của|từ|đến|đến_hết|dừng|tiếp|trường_hợp|sai|đúng|k_tồn_tại|khả_biến|hằng_số|và|hoặc|không|khác|var|function|return|if|else|while|for|of|break|continue|switch|true|false|null|mut|const|and|or|not)\\b",
+          "name": "keyword.control.nova"
+        },
+        {
+          "match": "\\b(số_nguyên|chuỗi|logic|số_thực_kép|trống|int|string|boolean|double|void)\\b",
+          "name": "entity.name.type.nova"
+        }
+      ]
+    },
+    "builtins": {
+      "patterns": [
+        {
+          "match": "\\b(print|println|in|in_dòng_mới|printf|in_định_dạng)\\b",
+          "name": "support.function.nova"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "match": "\\b\\d+(\\.\\d+)?\\b",
+          "name": "constant.numeric.nova"
+        }
+      ]
+    }
+  },
+  "scopeName": "source.nova"
+}

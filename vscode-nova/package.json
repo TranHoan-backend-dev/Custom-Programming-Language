@@ -1,0 +1,54 @@
+{
+  "name": "nova-lang",
+  "displayName": "Nova Language Support",
+  "description": "Syntax highlighting and snippets for Nova programming language.",
+  "version": "1.0.0",
+  "publisher": "hoan",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "main": "./src/extension.js",
+  "activationEvents": [
+    "onLanguage:nova"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "nova",
+        "aliases": [
+          "Nova",
+          "nova"
+        ],
+        "extensions": [
+          ".nova"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "nova",
+        "scopeName": "source.nova",
+        "path": "./syntaxes/nova.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "nova.run",
+        "title": "Nova: Run Current File"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "resourceExtname == .nova",
+          "command": "nova.run",
+          "group": "navigation"
+        }
+      ]
+    }
+  }
+}
