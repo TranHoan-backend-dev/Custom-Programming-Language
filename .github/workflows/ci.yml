@@ -85,6 +85,7 @@ jobs:
         distribution: 'temurin'
         
     - name: Compile and package nova.jar
+      shell: cmd
       run: |
         mkdir out\production\nova
         dir /s /b src\*.java > sources.txt
