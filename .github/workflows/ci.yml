@@ -89,9 +89,9 @@ jobs:
       run: |
         mkdir out\production\nova
         dir /s /b src\*.java > sources.txt
-        # Biên dịch source code
+        :: Biên dịch source code
         javac -encoding UTF-8 -d out\production\nova @sources.txt
-        # Gói tất cả file .class thành 1 file nova.jar duy nhất, chỉ định file chạy chính là Main
+        :: Gói tất cả file .class thành 1 file nova.jar duy nhất, chỉ định file chạy chính là Main
         jar cfe out\production\nova.jar Main -C out\production\nova .
 
     - name: Download bundled JRE 21
@@ -105,8 +105,9 @@ jobs:
         Move-Item -Path "jre_extracted\jre" -Destination ".\jre"
         
     - name: Compile Inno Setup Script
+      shell: cmd
       run: |
-        # Gọi trình biên dịch ISCC của Inno Setup (đã cài sẵn trên runner Windows) để tạo file Nova-Setup.exe
+        :: Gọi trình biên dịch ISCC của Inno Setup (đã cài sẵn trên runner Windows) để tạo file Nova-Setup.exe
         "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\nova-setup.iss
         
     - name: Upload Windows Installer
