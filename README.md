@@ -29,6 +29,11 @@ Dưới đây là chi tiết các phần đặc tả ngôn ngữ CPL được ch
 - [🔧 **Phần X: Hàm (Functions)**](docs/10_functions.md) - Cú pháp khai báo hàm, tham số tường minh, trả về tuple (nhiều giá trị).
 - [📜 **Phần XI: Chuỗi ký tự (Strings)**](docs/11_strings.md) - Tạo chuỗi, chuyển đổi kiểu với `to_string()`, nối chuỗi, và các thao tác chuỗi phổ biến.
 
+### 📏 Quy tắc viết mã (Convention)
+
+- [📛 **Quy tắc đặt tên (Naming Convention)**](docs/convention/naming_convention.md) - Quy ước đặt tên file, hàm, biến, hằng số và quy tắc song ngữ Anh-Việt.
+- [📐 **Quy tắc viết mã (Coding Convention)**](docs/convention/coding_convention.md) - Thụt lề, ngoặc nhọn, comment, độ dài dòng, mutability và null safety.
+
 ---
 
 ## ⌨️ Chạy tương tác (REPL)

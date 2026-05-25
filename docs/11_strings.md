@@ -22,8 +22,8 @@ string name = "Nguyễn Văn A"
 ### 🇻🇳 Phiên bản tiếng Việt
 
 ```text
-biến lờiChào = "Xin chào, thế giới!"
-chuỗi tên = "Nguyễn Văn A"
+biến loiChao = "Xin chào, thế giới!"
+chuỗi ten = "Nguyễn Văn A"
 ```
 
 ---
@@ -50,14 +50,14 @@ var activeStr = active.to_string()  // "true"
 ### 🇻🇳 Phiên bản tiếng Việt
 
 ```text
-số_nguyên tuổi = 25
-biến tuổiStr = tuổi.to_string()        // "25"
+số_nguyên tuoi = 25
+biến tuoiStr = tuoi.to_string()        // "25"
 
 số_thực_kép pi = 3.14
 biến piStr = pi.to_string()            // "3.14"
 
-logic đangHoạtĐộng = đúng
-biến trạngTháiStr = đangHoạtĐộng.to_string()  // "đúng"
+logic dangHoatDong = đúng
+biến trangThaiStr = dangHoatDong.to_string()  // "đúng"
 ```
 
 ---
@@ -81,13 +81,13 @@ var info = "Tuổi: " + age.to_string()       // "Tuổi: 25"
 ### 🇻🇳 Phiên bản tiếng Việt
 
 ```text
-biến họ = "Nguyễn"
-biến tên = "Văn A"
-biến họTên = họ + " " + tên                // "Nguyễn Văn A"
+biến ho = "Nguyễn"
+biến ten = "Văn A"
+biến hoTen = ho + " " + ten                // "Nguyễn Văn A"
 
 // Nối với số — phải gọi to_string() trước
-số_nguyên tuổi = 25
-biến thôngTin = "Tuổi: " + tuổi.to_string()  // "Tuổi: 25"
+số_nguyên tuoi = 25
+biến thongTin = "Tuổi: " + tuoi.to_string()  // "Tuổi: 25"
 ```
 
 ---

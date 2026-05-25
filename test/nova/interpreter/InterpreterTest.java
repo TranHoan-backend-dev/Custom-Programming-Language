@@ -256,9 +256,9 @@ public class InterpreterTest {
 
         // Case 3: Nội suy trực tiếp chuỗi chứa {tên_biến}
         var src3 = """
-                biến tên = "Nova"
-                biến năm = 2026
-                print("Ngôn ngữ {tên} ra mắt năm {năm}")
+                biến ten = "Nova"
+                biến nam = 2026
+                print("Ngôn ngữ {ten} ra mắt năm {nam}")
                 """;
         var r3 = runSource(src3);
         InterpreterAssert.assertFalse(r3.isStaticError);
@@ -478,10 +478,10 @@ public class InterpreterTest {
 
         // Case 1: Câu lệnh rẽ nhánh if-else lồng nhau
         String src1 = """
-                biến điểm = 85;
-                nếu (điểm >= 90) thì {
+                biến diem = 85;
+                nếu (diem >= 90) thì {
                     print("Xuất sắc");
-                } còn_nếu (điểm >= 80) thì {
+                } còn_nếu (diem >= 80) thì {
                     print("Giỏi");
                 } không_thì {
                     print("Khá");
@@ -649,10 +649,10 @@ public class InterpreterTest {
 
         // Case 2: Hàm trả về Tuple (nhiều giá trị)
         String src2 = """
-                hàm getCoordinates() -> (số_nguyên x, số_nguyên y) {
+                hàm get_coordinates() -> (số_nguyên x, số_nguyên y) {
                     trả_về (10, 20);
                 }
-                biến (posX, posY) = getCoordinates();
+                biến (posX, posY) = get_coordinates();
                 print(posX, posY);
                 """;
         ExecutionResult r2 = runSource(src2);
@@ -664,7 +664,7 @@ public class InterpreterTest {
 
         // Case 3: Hàm lồng nhau và Closures chụp biến môi trường cha
         String src3 = """
-                hàm makeCounter() -> func() -> số_nguyên {
+                hàm make_counter() -> func() -> số_nguyên {
                     biến khả_biến count = 0;
                     hàm counter() -> số_nguyên {
                         count = count + 1;
@@ -672,7 +672,7 @@ public class InterpreterTest {
                     }
                     trả_về counter;
                 }
-                biến myCounter = makeCounter();
+                biến myCounter = make_counter();
                 println(myCounter());
                 println(myCounter());
                 """;

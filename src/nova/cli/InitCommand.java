@@ -49,7 +49,7 @@ public class InitCommand implements CliCommand {
             ProcessBuilder pb = new ProcessBuilder("git", "--version");
             Process p = pb.start();
             if (p.waitFor() == 0) {
-                System.out.println("Khởi tạo Git repository...");
+                System.out.println("Initializing Git repository...");
                 ProcessBuilder gitInit = new ProcessBuilder("git", "init");
                 gitInit.directory(projectPath.toFile());
                 gitInit.start().waitFor();
@@ -57,12 +57,21 @@ public class InitCommand implements CliCommand {
                 // Tạo file .gitignore cơ bản cho dự án
                 String gitignore = "out/\ndist/\n";
                 Files.writeString(projectPath.resolve(".gitignore"), gitignore);
+
+                // Tạo file .gitattributes cho dự án
+                String gitattributes = "# Nova source files\n"
+                        + "*.nova text eol=lf\n"
+                        + "\n"
+                        + "# Common settings\n"
+                        + "*.md text eol=lf\n"
+                        + "*.yaml text eol=lf\n";
+                Files.writeString(projectPath.resolve(".gitattributes"), gitattributes);
             }
         } catch (Exception e) {
             // Bỏ qua nếu git không được cài đặt
         }
 
         System.out.println("Successfully initialized project '" + projectName + "'!");
-        System.out.println("You can run it with: nova run (nếu đã cài đặt biến môi trường) hoặc .\\nova.bat run");
+        System.out.println("You can run it with: nova run (if PATH is configured) or .\\nova.bat run");
     }
 }

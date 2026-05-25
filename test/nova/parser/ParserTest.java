@@ -490,7 +490,7 @@ public class ParserTest {
 
         // Happy Case 1: Hàm trả về tuple (nhiều giá trị)
         String src1 = """
-            hàm chia_có_dư(số_nguyên a, số_nguyên b) -> (số_nguyên thương, số_nguyên dư) {
+            hàm chia_co_du(số_nguyên a, số_nguyên b) -> (số_nguyên thuong, số_nguyên du) {
                 trả_về k_tồn_tại;
             }
             """;
@@ -498,9 +498,9 @@ public class ParserTest {
         List<Stmt> ast1 = p1.parse();
         ParserAssert.assertTrue(!p1.hasErrors());
         ParserAssert.assertEquals(
-            "Hàm: chia_có_dư\n" +
+            "Hàm: chia_co_du\n" +
             "Tham số: a (Kiểu: số_nguyên), b (Kiểu: số_nguyên)\n" +
-            "Kiểu trả về: (số_nguyên thương, số_nguyên dư)\n" +
+            "Kiểu trả về: (số_nguyên thuong, số_nguyên du)\n" +
             "Thân hàm: {\n" +
             "    Trả về null\n" +
             "}", 

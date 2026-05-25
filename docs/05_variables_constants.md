@@ -14,7 +14,7 @@
 > | `biến tổngSố = 0`         | `biến tongSo = 0`         |
 > | `biến họTên = "..."`      | `biến hoTen = "..."`      |
 > | `biến tuổi = 18`          | `biến tuoi = 18`          |
-> | `tínhTổng(số_nguyên a)`   | `tinhTong(so_nguyen a)`   |
+> | `tínhTổng(số_nguyên a)`   | `tinhTong(số_nguyên a)`   |
 >
 > **Lý do:** Gõ ký tự có dấu tiếng Việt trong môi trường lập trình đòi hỏi bộ gõ đặc biệt, dễ gây ra lỗi mã hóa và làm chậm tốc độ viết code.
 
@@ -144,7 +144,7 @@ const string X = "10"
 hằng_số chuỗi X = "10"
 ```
 
-> 💡 **Mẹo viết code:** Tên hằng số nên được viết hoa toàn bộ và sử dụng `snake_case` (ví dụ: `MAX_VALUE`, `TỐC_ĐỘ_TỐI_ĐA`).
+> 💡 **Mẹo viết code:** Tên hằng số nên được viết hoa toàn bộ và sử dụng `UPPER_SNAKE_CASE` (ví dụ: `MAX_VALUE`, `TOC_DO_TOI_DA`).
 
 > ⚠️ **Scope của hằng số:** Hằng số cũng tuân theo block scope giống biến thường. Tuy nhiên, hằng số khai báo ở cấp cao nhất (top-level, ngoài mọi hàm) có thể được truy cập từ toàn bộ chương trình.
 

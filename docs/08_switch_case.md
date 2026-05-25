@@ -37,7 +37,7 @@ Cho phép gán trực tiếp kết quả của cấu trúc rẽ nhánh cho một
 #### 🇬🇧 Phiên bản tiếng Anh
 
 ```text
-var kết_quả = switch (x) {
+var ketQua = switch (x) {
     1 -> "Một"
     2 -> "Hai"
     _ -> "Khác"
@@ -47,7 +47,7 @@ var kết_quả = switch (x) {
 #### 🇻🇳 Phiên bản tiếng Việt
 
 ```text
-biến kết_quả = trường_hợp (x) {
+biến ketQua = trường_hợp (x) {
     1 -> "Một"
     2 -> "Hai"
     _ -> "Khác"

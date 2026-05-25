@@ -32,3 +32,4 @@ bin/
 build
 
 *.local.**
+test-language/

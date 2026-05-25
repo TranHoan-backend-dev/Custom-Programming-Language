@@ -39,12 +39,12 @@ function functionName() -> ReturnType {
 
 ```text
 // Cách 1: Bắt đầu trực tiếp bằng tên hàm
-tenHam() -> KiểuTrảVề {
+ten_ham() -> KiểuTrảVề {
     // Thân hàm
 }
 
 // Cách 2: Sử dụng từ khóa hàm (tùy chọn)
-hàm tenHam() -> KiểuTrảVề {
+hàm ten_ham() -> KiểuTrảVề {
     // Thân hàm
 }
 ```
@@ -66,7 +66,7 @@ function greet() -> void {
 
 ```text
 // Sử dụng từ khóa hàm
-hàm chaoHoi() -> trống {
+hàm chao_hoi() -> trống {
     in_dòng_mới("Xin chào!")
 }
 ```
@@ -97,13 +97,13 @@ function greetUser(string name, int age) -> void {
 
 ```text
 // Ví dụ không dùng từ khóa khai báo
-tổng(số_nguyên a, số_nguyên b) -> số_nguyên {
+tong(số_nguyên a, số_nguyên b) -> số_nguyên {
     trả_về a + b
 }
 
 // Ví dụ dùng từ khóa hàm
-hàm chaoNguoiDung(chuỗi tên, số_nguyên tuổi) -> trống {
-    in_dòng_mới("Tên: " + tên + ", Tuổi: " + tuổi)
+hàm chao_nguoi_dung(chuỗi ten, số_nguyên tuoi) -> trống {
+    in_dòng_mới("Tên: " + ten + ", Tuổi: " + tuoi)
 }
 ```
 
@@ -146,17 +146,17 @@ abs(int n) -> int {
 
 ```text
 // Hàm trống — không cần trả_về
-chàoHỏi(chuỗi tên) -> trống {
-    in_dòng_mới("Xin chào, " + tên)
+chao_hoi(chuỗi ten) -> trống {
+    in_dòng_mới("Xin chào, " + ten)
 }
 
 // Hàm có giá trị trả về — bắt buộc trả_về
-bìnhPhương(số_nguyên n) -> số_nguyên {
+binh_phuong(số_nguyên n) -> số_nguyên {
     trả_về n * n
 }
 
 // Thoát sớm với trả_về
-trịTuyệtĐối(số_nguyên n) -> số_nguyên {
+tri_tuyet_doi(số_nguyên n) -> số_nguyên {
     nếu (n < 0) thì {
         trả_về n * -1
     }
@@ -188,12 +188,12 @@ println(r)   // 1
 
 ```text
 // Khai báo hàm trả về tuple
-chiaCóDư(số_nguyên a, số_nguyên b) -> (số_nguyên thương, số_nguyên dư) {
+chia_co_du(số_nguyên a, số_nguyên b) -> (số_nguyên thuong, số_nguyên du) {
     trả_về (a / b, a % b)
 }
 
 // Sử dụng
-biến (t, d) = chiaCóDư(10, 3)
+biến (t, d) = chia_co_du(10, 3)
 in_dòng_mới(t)   // 3
 in_dòng_mới(d)   // 1
 ```
@@ -204,9 +204,9 @@ in_dòng_mới(d)   // 1
 
 | Quy tắc          | Mô tả                                          | Ví dụ                            |
 | :--------------- | :--------------------------------------------- | :------------------------------- |
-| **camelCase**    | Chữ cái đầu viết thường, từ tiếp theo viết hoa | `tínhTổng`, `layDuLieu`          |
-| Tên mô tả hành động | Nên bắt đầu bằng động từ                    | `tínhDiệnTích`, `kiểmTra`, `lấy` |
-| Không dùng `_`   | Không dùng snake_case cho tên hàm               | ❌ `tinh_tong` → ✅ `tínhTổng`   |
+| **snake_case**   | Tất cả chữ thường, phân tách bởi `_`           | `tinh_tong`, `lay_du_lieu`       |
+| Tên mô tả hành động | Nên bắt đầu bằng động từ                    | `tinh_dien_tich`, `kiem_tra`     |
+| Tiếng Việt không dấu | Không dùng dấu tiếng Việt cho tên hàm       | ❌ `tính_tổng` → ✅ `tinh_tong`   |
 
 ---
 
