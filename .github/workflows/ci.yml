@@ -4,6 +4,8 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ "main" ] # Chạy khi có code mới đẩy lên nhánh main
+    tags:
+      - 'v*' # Chạy khi có một tag mới (ví dụ: v0.0.3)
   pull_request:
     branches: [ "main" ] # Chạy khi có Pull Request gộp vào nhánh main
 
@@ -115,3 +117,29 @@ jobs:
       with:
         name: nova-setup-exe
         path: out\Nova-Setup.exe
+
+  # ==========================================
+  # JOB 4: ĐĂNG TẢI LÊN GITHUB RELEASES (Tự động)
+  # ==========================================
+  release:
+    needs: [build-vscode-extension, build-windows-installer] # Chỉ chạy khi 2 job trên đã xong
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/') # Chỉ kích hoạt job này khi bạn push một Tag (VD: v0.0.3)
+    steps:
+      - name: Download VS Code Extension
+        uses: actions/download-artifact@v4
+        with:
+          name: nova-lang-vsix
+          
+      - name: Download Windows Installer
+        uses: actions/download-artifact@v4
+        with:
+          name: nova-setup-exe
+          
+      - name: Upload to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            nova-lang.vsix
+            Nova-Setup.exe
+          generate_release_notes: true
