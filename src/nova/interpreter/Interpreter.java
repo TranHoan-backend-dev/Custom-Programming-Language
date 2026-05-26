@@ -310,8 +310,15 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                 sb.append(")");
                 return sb.toString();
             }
-            case Double _, Float _ -> {
-                var text = object.toString();
+            case Double d -> {
+                var text = d.toString();
+                if (text.endsWith(".0")) {
+                    text = text.substring(0, text.length() - 2);
+                }
+                return text;
+            }
+            case Float f -> {
+                var text = f.toString();
                 if (text.endsWith(".0")) {
                     text = text.substring(0, text.length() - 2);
                 }
@@ -400,7 +407,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                 for (var i = 0; i < block.statements.size() - 1; i++) {
                     execute(block.statements.get(i));
                 }
-                return evaluateStatementAsExpr(block.statements.getLast());
+                return evaluateStatementAsExpr(block.statements.get(block.statements.size() - 1));
             } finally {
                 this.environment = previous;
             }

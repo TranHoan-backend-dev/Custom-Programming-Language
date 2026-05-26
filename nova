@@ -11,6 +11,15 @@ if [ -n "$JAVA_HOME" ]; then
     JAVAC_CMD="$JAVA_HOME/bin/javac"
 fi
 
+# Lay phien ban javac de xac dinh --release cho --enable-preview
+JAVA_RELEASE=21
+if command -v "$JAVAC_CMD" >/dev/null 2>&1; then
+    JAVAC_VER=$("$JAVAC_CMD" -version 2>&1 | awk '{print $2}')
+    if [ -n "$JAVAC_VER" ]; then
+        JAVA_RELEASE=$(echo "$JAVAC_VER" | cut -d'.' -f1 | cut -d'-' -f1 | cut -d'+' -f1)
+    fi
+fi
+
 # Kiem tra lenh clean
 if [ "$1" = "clean" ]; then
     echo "[Nova CLI] Dang don dep thu muc out..."
@@ -23,7 +32,7 @@ fi
 if [ "$1" = "build" ]; then
     echo "[Nova CLI] Dang bien dich ma nguon Interpreter..."
     mkdir -p "$DIR/out"
-    "$JAVAC_CMD" -encoding UTF-8 -d "$DIR/out" -sourcepath "$DIR/src" "$DIR/src/Main.java"
+    "$JAVAC_CMD" --release "$JAVA_RELEASE" --enable-preview -encoding UTF-8 -d "$DIR/out" -sourcepath "$DIR/src" "$DIR/src/Main.java"
     echo "[Nova CLI] Build hoan tat!"
     exit 0
 fi
@@ -32,10 +41,10 @@ fi
 if [ "$1" = "test-core" ]; then
     echo "[Nova CLI] Dang bien dich va chay test core (Java)..."
     mkdir -p "$DIR/out"
-    "$JAVAC_CMD" -encoding UTF-8 -d "$DIR/out" -sourcepath "$DIR/src" "$DIR/src/Main.java"
-    "$JAVAC_CMD" -encoding UTF-8 -cp "$DIR/out" -d "$DIR/out" "$DIR/test/parser/ParserAssert.java" "$DIR/test/parser/ParserTest.java"
+    "$JAVAC_CMD" --release "$JAVA_RELEASE" --enable-preview -encoding UTF-8 -d "$DIR/out" -sourcepath "$DIR/src" "$DIR/src/Main.java"
+    "$JAVAC_CMD" --release "$JAVA_RELEASE" --enable-preview -encoding UTF-8 -cp "$DIR/out" -d "$DIR/out" "$DIR/test/parser/ParserAssert.java" "$DIR/test/parser/ParserTest.java"
     echo "[Nova CLI] Dang chay ParserTest..."
-    "$JAVA_CMD" -cp "$DIR/out" nova.parser.ParserTest
+    "$JAVA_CMD" --enable-preview -cp "$DIR/out" nova.parser.ParserTest
     exit 0
 fi
 
@@ -43,7 +52,7 @@ fi
 if [ ! -d "$DIR/out" ]; then
     echo "[Nova CLI] Khoi tao build lan dau..."
     mkdir -p "$DIR/out"
-    "$JAVAC_CMD" -encoding UTF-8 -d "$DIR/out" -sourcepath "$DIR/src" "$DIR/src/Main.java"
+    "$JAVAC_CMD" --release "$JAVA_RELEASE" --enable-preview -encoding UTF-8 -d "$DIR/out" -sourcepath "$DIR/src" "$DIR/src/Main.java"
 fi
 
-"$JAVA_CMD" -cp "$DIR/out" Main "$@"
+"$JAVA_CMD" --enable-preview -cp "$DIR/out" Main "$@"

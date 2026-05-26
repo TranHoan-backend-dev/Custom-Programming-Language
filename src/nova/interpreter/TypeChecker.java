@@ -829,17 +829,15 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
     @Override
     public String visitLiteralExpr(Expr.Literal expr) {
         Object val = expr.value;
-        return switch (val) {
-            case null -> "null";
-            case Integer _ -> "int";
-            case Double _ -> "double";
-            case Float _ -> "float";
-            case Long _ -> "int64";
-            case Boolean _ -> "boolean";
-            case Character _ -> "char";
-            case String _ -> "string";
-            default -> "any";
-        };
+        if (val == null) return "null";
+        if (val instanceof Integer) return "int";
+        if (val instanceof Double) return "double";
+        if (val instanceof Float) return "float";
+        if (val instanceof Long) return "int64";
+        if (val instanceof Boolean) return "boolean";
+        if (val instanceof Character) return "char";
+        if (val instanceof String) return "string";
+        return "any";
     }
 
     @Override
@@ -891,7 +889,7 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
             var returnType = getReturnType(calleeType);
 
             // Nếu là hàm nhận any làm đối số, bỏ qua kiểm tra số lượng và kiểu nhưng vẫn phân tích các đối số
-            if (paramTypes.size() == 1 && paramTypes.getFirst().equals("any")) {
+            if (paramTypes.size() == 1 && paramTypes.get(0).equals("any")) {
                 for (var argument : expr.arguments) {
                     resolve(argument);
                 }
@@ -989,13 +987,13 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
         if (stmt instanceof Stmt.Block block) {
             resolve(block);
             if (block.statements.isEmpty()) return "void";
-            var last = block.statements.getLast();
+            var last = block.statements.get(block.statements.size() - 1);
             return getStatementExpressionType(last);
         }
         if (stmt instanceof Stmt.Switch sw) {
             resolve(sw);
             if (sw.cases.isEmpty()) return "void";
-            var firstType = getStatementExpressionType(sw.cases.getFirst().body);
+            var firstType = getStatementExpressionType(sw.cases.get(0).body);
             for (Stmt.SwitchCase sc : sw.cases) {
                 String scType = getStatementExpressionType(sc.body);
                 if (!isCompatible(firstType, scType) && !isCompatible(scType, firstType)) {
@@ -1017,7 +1015,7 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
         }
         if (stmt instanceof Stmt.Block block) {
             if (block.statements.isEmpty()) return "void";
-            return getStatementExpressionType(block.statements.getLast());
+            return getStatementExpressionType(block.statements.get(block.statements.size() - 1));
         }
         if (stmt instanceof Stmt.If ifStmt) {
             return getStatementExpressionType(ifStmt.thenBranch);

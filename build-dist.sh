@@ -15,14 +15,14 @@ jar cfe dist/nova-lang.jar Main -C out .
 # Tao file nova.bat cho phan phoi (Windows users)
 cat << 'EOF' > dist/nova.bat
 @echo off
-java -jar "%~dp0nova-lang.jar" %*
+java --enable-preview -jar "%~dp0nova-lang.jar" %*
 EOF
 
 # Tao file nova cho bash/linux (Linux/Mac users)
 cat << 'EOF' > dist/nova
 #!/bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-java -jar "$DIR/nova-lang.jar" "$@"
+java --enable-preview -jar "$DIR/nova-lang.jar" "$@"
 EOF
 
 chmod +x dist/nova
