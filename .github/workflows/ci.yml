@@ -34,16 +34,16 @@ jobs:
         find src -name "*.java" > sources.txt
         find test -name "*.java" >> sources.txt
         # Chạy trình biên dịch javac
-        javac -encoding UTF-8 -d out/production/untitled @sources.txt
+        javac --enable-preview --release 21 -encoding UTF-8 -d out/production/untitled @sources.txt
 
     - name: Run ParserTest
-      run: java -cp out/production/untitled nova.parser.ParserTest # Chạy test cho bộ Phân tích cú pháp
+      run: java --enable-preview -cp out/production/untitled nova.parser.ParserTest # Chạy test cho bộ Phân tích cú pháp
 
     - name: Run InterpreterTest
-      run: java -cp out/production/untitled nova.interpreter.InterpreterTest # Chạy test cho bộ Thông dịch
+      run: java --enable-preview -cp out/production/untitled nova.interpreter.InterpreterTest # Chạy test cho bộ Thông dịch
 
     - name: Run NovaReplTest
-      run: java -cp out/production/untitled nova.repl.NovaReplTest # Chạy test cho môi trường REPL
+      run: java --enable-preview -cp out/production/untitled nova.repl.NovaReplTest # Chạy test cho môi trường REPL
 
   # ==========================================
   # JOB 2: ĐÓNG GÓI VS CODE EXTENSION
@@ -92,7 +92,7 @@ jobs:
         mkdir out\production\nova
         dir /s /b src\*.java > sources.txt
         :: Biên dịch source code
-        javac -encoding UTF-8 -d out\production\nova @sources.txt
+        javac --enable-preview --release 21 -encoding UTF-8 -d out\production\nova @sources.txt
         :: Gói tất cả file .class thành 1 file nova.jar duy nhất, chỉ định file chạy chính là Main
         jar cfe out\production\nova.jar Main -C out\production\nova .
 
