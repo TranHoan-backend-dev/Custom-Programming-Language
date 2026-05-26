@@ -2,12 +2,20 @@ package nova.interpreter;
 
 import nova.ast.Expr;
 import nova.ast.Stmt;
+import nova.interpreter.exception.BreakException;
+import nova.interpreter.exception.ContinueException;
+import nova.interpreter.exception.ReturnException;
+import nova.interpreter.exception.RuntimeError;
 import nova.lexer.Token;
+
 import nova.lexer.TokenType;
+import nova.utils.NovaLogger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Trình thông dịch cây cú pháp trừu tượng (AST) cho ngôn ngữ Nova.
@@ -155,6 +163,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             }
         } catch (RuntimeError error) {
             System.err.println(error.getMessage());
+            NovaLogger.error("Runtime Error: " + error.getMessage());
         }
     }
 
@@ -189,7 +198,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         Environment previous = this.environment;
         try {
             this.environment = environment;
-            for (Stmt statement : statements) {
+            for (var statement : statements) {
                 execute(statement);
             }
         } finally {
@@ -212,27 +221,26 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             return;
         }
 
-        Object firstArg = arguments.get(0);
-        if (firstArg instanceof String) {
-            String format = (String) firstArg;
+        var firstArg = arguments.getFirst();
+        if (firstArg instanceof String format) {
 
             // Bước 1: Nội suy trực tiếp các chuỗi dạng {tên_biến}
-            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\{([^}]+)\\}");
-            java.util.regex.Matcher matcher = pattern.matcher(format);
-            StringBuilder sb = new StringBuilder();
+            var pattern = Pattern.compile("\\{([^}]+)}");
+            var matcher = pattern.matcher(format);
+            var sb = new StringBuilder();
             while (matcher.find()) {
-                String varName = matcher.group(1);
-                Object val = environment.getByName(varName);
-                String valStr = val == null ? "null" : stringify(val);
-                matcher.appendReplacement(sb, java.util.regex.Matcher.quoteReplacement(valStr));
+                var varName = matcher.group(1);
+                var val = environment.getByName(varName);
+                var valStr = val == null ? "null" : stringify(val);
+                matcher.appendReplacement(sb, Matcher.quoteReplacement(valStr));
             }
             matcher.appendTail(sb);
-            String interpolated = sb.toString();
+            var interpolated = sb.toString();
 
             // Bước 2: Định dạng theo vị trí {}
-            StringBuilder finalSb = new StringBuilder();
-            int argIndex = 1;
-            int i = 0;
+            var finalSb = new StringBuilder();
+            var argIndex = 1;
+            var i = 0;
             while (i < interpolated.length()) {
                 if (i < interpolated.length() - 1 && interpolated.charAt(i) == '{' && interpolated.charAt(i + 1) == '}') {
                     if (argIndex < arguments.size()) {
@@ -248,8 +256,8 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             }
 
             if (argIndex < arguments.size()) {
-                for (int idx = argIndex; idx < arguments.size(); idx++) {
-                    if (finalSb.length() > 0 && finalSb.charAt(finalSb.length() - 1) != ' ') {
+                for (var idx = argIndex; idx < arguments.size(); idx++) {
+                    if (!finalSb.isEmpty() && finalSb.charAt(finalSb.length() - 1) != ' ') {
                         finalSb.append(" ");
                     }
                     finalSb.append(stringify(arguments.get(idx)));
@@ -257,23 +265,23 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             }
 
             if (newline) {
-                out.println(finalSb.toString());
+                out.println(finalSb);
             } else {
-                out.print(finalSb.toString());
+                out.print(finalSb);
             }
         } else {
             // Không phải chuỗi định dạng, in ra chuỗi đại diện phân tách bởi dấu cách
-            StringBuilder sb = new StringBuilder();
-            for (int idx = 0; idx < arguments.size(); idx++) {
+            var sb = new StringBuilder();
+            for (var idx = 0; idx < arguments.size(); idx++) {
                 sb.append(stringify(arguments.get(idx)));
                 if (idx < arguments.size() - 1) {
                     sb.append(" ");
                 }
             }
             if (newline) {
-                out.println(sb.toString());
+                out.println(sb);
             } else {
-                out.print(sb.toString());
+                out.print(sb);
             }
         }
     }
@@ -286,36 +294,31 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
      * @return Chuỗi đại diện của đối tượng
      */
     public static String stringify(Object object) {
-        if (object == null) return "null";
-
-        if (object instanceof List) {
-            List<?> list = (List<?>) object;
-            StringBuilder sb = new StringBuilder();
-            sb.append("(");
-            for (int i = 0; i < list.size(); i++) {
-                sb.append(stringify(list.get(i)));
-                if (i < list.size() - 1) {
-                    sb.append(", ");
+        switch (object) {
+            case null -> {
+                return "null";
+            }
+            case List<?> list -> {
+                var sb = new StringBuilder();
+                sb.append("(");
+                for (var i = 0; i < list.size(); i++) {
+                    sb.append(stringify(list.get(i)));
+                    if (i < list.size() - 1) {
+                        sb.append(", ");
+                    }
                 }
+                sb.append(")");
+                return sb.toString();
             }
-            sb.append(")");
-            return sb.toString();
-        }
-
-        if (object instanceof Double) {
-            String text = object.toString();
-            if (text.endsWith(".0")) {
-                text = text.substring(0, text.length() - 2);
+            case Double _, Float _ -> {
+                var text = object.toString();
+                if (text.endsWith(".0")) {
+                    text = text.substring(0, text.length() - 2);
+                }
+                return text;
             }
-            return text;
-        }
-
-        if (object instanceof Float) {
-            String text = object.toString();
-            if (text.endsWith(".0")) {
-                text = text.substring(0, text.length() - 2);
+            default -> {
             }
-            return text;
         }
 
         return object.toString();
@@ -362,8 +365,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
      * @return {@code true} nếu khớp, ngược lại {@code false}
      */
     private boolean isMatch(Object value, Expr pattern) {
-        if (pattern instanceof Expr.Variable) {
-            Expr.Variable varExpr = (Expr.Variable) pattern;
+        if (pattern instanceof Expr.Variable varExpr) {
             if (varExpr.name.lexeme().equals("_")) {
                 return true;
             }
@@ -389,24 +391,22 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         if (stmt instanceof Stmt.Expression) {
             return evaluate(((Stmt.Expression) stmt).expression);
         }
-        if (stmt instanceof Stmt.Block) {
-            Stmt.Block block = (Stmt.Block) stmt;
+        if (stmt instanceof Stmt.Block block) {
             if (block.statements.isEmpty()) return null;
 
             Environment previous = this.environment;
             try {
                 this.environment = new Environment(previous);
-                for (int i = 0; i < block.statements.size() - 1; i++) {
+                for (var i = 0; i < block.statements.size() - 1; i++) {
                     execute(block.statements.get(i));
                 }
-                return evaluateStatementAsExpr(block.statements.get(block.statements.size() - 1));
+                return evaluateStatementAsExpr(block.statements.getLast());
             } finally {
                 this.environment = previous;
             }
         }
-        if (stmt instanceof Stmt.If) {
-            Stmt.If ifStmt = (Stmt.If) stmt;
-            Object condition = evaluate(ifStmt.condition);
+        if (stmt instanceof Stmt.If ifStmt) {
+            var condition = evaluate(ifStmt.condition);
             if (isTruthy(condition)) {
                 return evaluateStatementAsExpr(ifStmt.thenBranch);
             } else if (ifStmt.elseBranch != null) {
@@ -414,11 +414,10 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             }
             return null;
         }
-        if (stmt instanceof Stmt.Switch) {
-            Stmt.Switch switchStmt = (Stmt.Switch) stmt;
-            Object switchValue = evaluate(switchStmt.value);
+        if (stmt instanceof Stmt.Switch switchStmt) {
+            var switchValue = evaluate(switchStmt.value);
             for (Stmt.SwitchCase sc : switchStmt.cases) {
-                for (Expr pattern : sc.patterns) {
+                for (var pattern : sc.patterns) {
                     if (isMatch(switchValue, pattern)) {
                         return evaluateStatementAsExpr(sc.body);
                     }
@@ -432,8 +431,8 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Object visitAssignExpr(Expr.Assign expr) {
-        Object val = evaluate(expr.value);
-        int distance = locals.getOrDefault(expr, -1);
+        var val = evaluate(expr.value);
+        var distance = locals.getOrDefault(expr, -1);
         if (distance != -1) {
             environment.assignAt(distance, expr.name, val);
         } else {
@@ -605,7 +604,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Object visitLogicalExpr(Expr.Logical expr) {
-        Object left = evaluate(expr.left);
+        var left = evaluate(expr.left);
 
         if (expr.operator.lexeme().equals("||") || expr.operator.lexeme().equals("hoặc") || expr.operator.lexeme().equals("or")) {
             if (isTruthy(left)) return left;
@@ -618,7 +617,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Object visitVariableExpr(Expr.Variable expr) {
-        int distance = locals.getOrDefault(expr, -1);
+        var distance = locals.getOrDefault(expr, -1);
         if (distance != -1) {
             return environment.getAt(distance, expr.name.lexeme());
         } else {
@@ -628,17 +627,16 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Object visitCallExpr(Expr.Call expr) {
-        Object calleeVal = evaluate(expr.callee);
-        java.util.List<Object> args = new java.util.ArrayList<>();
-        for (Expr arg : expr.arguments) {
+        var calleeVal = evaluate(expr.callee);
+        List<Object> args = new ArrayList<>();
+        for (var arg : expr.arguments) {
             args.add(evaluate(arg));
         }
 
-        if (!(calleeVal instanceof NovaCallable)) {
+        if (!(calleeVal instanceof NovaCallable function)) {
             throw new RuntimeError(expr.paren, "Đối tượng được gọi không phải là hàm.");
         }
 
-        NovaCallable function = (NovaCallable) calleeVal;
         if (function.arity() != -1 && args.size() != function.arity()) {
             throw new RuntimeError(expr.paren, "Sai số lượng đối số truyền vào hàm. Yêu cầu " + function.arity() + " nhưng nhận " + args.size() + ".");
         }
@@ -669,46 +667,47 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         Object obj = evaluate(expr.object);
         String propName = expr.name.lexeme();
 
-        if (obj instanceof String) {
-            String str = (String) obj;
-            if (propName.equals("length")) {
-                return new NovaCallable() {
-                    @Override
-                    public int arity() {
-                        return 0;
-                    }
+        if (obj instanceof String str) {
+            switch (propName) {
+                case "length" -> {
+                    return new NovaCallable() {
+                        @Override
+                        public int arity() {
+                            return 0;
+                        }
 
-                    @Override
-                    public Object call(Interpreter interpreter, List<Object> arguments) {
-                        return str.length();
-                    }
-                };
-            }
-            if (propName.equals("toUpperCase")) {
-                return new NovaCallable() {
-                    @Override
-                    public int arity() {
-                        return 0;
-                    }
+                        @Override
+                        public Object call(Interpreter interpreter, List<Object> arguments) {
+                            return str.length();
+                        }
+                    };
+                }
+                case "toUpperCase" -> {
+                    return new NovaCallable() {
+                        @Override
+                        public int arity() {
+                            return 0;
+                        }
 
-                    @Override
-                    public Object call(Interpreter interpreter, List<Object> arguments) {
-                        return str.toUpperCase();
-                    }
-                };
-            }
-            if (propName.equals("to_string")) {
-                return new NovaCallable() {
-                    @Override
-                    public int arity() {
-                        return 0;
-                    }
+                        @Override
+                        public Object call(Interpreter interpreter, List<Object> arguments) {
+                            return str.toUpperCase();
+                        }
+                    };
+                }
+                case "to_string" -> {
+                    return new NovaCallable() {
+                        @Override
+                        public int arity() {
+                            return 0;
+                        }
 
-                    @Override
-                    public Object call(Interpreter interpreter, List<Object> arguments) {
-                        return str;
-                    }
-                };
+                        @Override
+                        public Object call(Interpreter interpreter, List<Object> arguments) {
+                            return str;
+                        }
+                    };
+                }
             }
         }
 
@@ -748,14 +747,14 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitFunctionStmt(Stmt.Function stmt) {
-        NovaFunction function = new NovaFunction(stmt, environment);
+        var function = new NovaFunction(stmt, environment);
         environment.define(stmt.name.lexeme(), function);
         return null;
     }
 
     @Override
     public Void visitIfStmt(Stmt.If stmt) {
-        Object condition = evaluate(stmt.condition);
+        var condition = evaluate(stmt.condition);
         if (isTruthy(condition)) {
             execute(stmt.thenBranch);
         } else if (stmt.elseBranch != null) {
@@ -772,13 +771,17 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
      * @return Danh sách các Token định danh cho từng biến được giải cấu trúc
      */
     private List<Token> extractDestructuredNames(Token parent) {
+        return getTokens(parent);
+    }
+
+    static List<Token> getTokens(Token parent) {
         List<Token> result = new ArrayList<>();
-        String lexeme = parent.lexeme();
+        var lexeme = parent.lexeme();
         if (lexeme.startsWith("(") && lexeme.endsWith(")")) {
-            String content = lexeme.substring(1, lexeme.length() - 1);
-            String[] parts = content.split(",");
-            for (String part : parts) {
-                String nameStr = part.trim();
+            var content = lexeme.substring(1, lexeme.length() - 1);
+            var parts = content.split(",");
+            for (var part : parts) {
+                var nameStr = part.trim();
                 if (!nameStr.isEmpty()) {
                     result.add(new Token(TokenType.IDENTIFIER, nameStr));
                 }
@@ -798,7 +801,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Object visitTupleExpr(Expr.Tuple expr) {
         List<Object> elements = new ArrayList<>();
-        for (Expr element : expr.expressions) {
+        for (var element : expr.expressions) {
             elements.add(evaluate(element));
         }
         return elements;
@@ -823,9 +826,8 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
         if (stmt.name.lexeme().startsWith("(") && stmt.name.lexeme().endsWith(")")) {
             List<Token> names = extractDestructuredNames(stmt.name);
-            if (val instanceof List) {
-                List<?> values = (List<?>) val;
-                for (int i = 0; i < names.size(); i++) {
+            if (val instanceof List<?> values) {
+                for (var i = 0; i < names.size(); i++) {
                     Object itemVal = i < values.size() ? values.get(i) : null;
                     environment.define(names.get(i).lexeme(), itemVal);
                 }
@@ -866,12 +868,11 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Void visitForStmt(Stmt.For stmt) {
         if (stmt.isForEach) {
-            Object col = evaluate(stmt.end);
-            if (col instanceof List) {
-                List<?> list = (List<?>) col;
+            var col = evaluate(stmt.end);
+            if (col instanceof List<?> list) {
                 Environment previous = this.environment;
                 try {
-                    for (Object item : list) {
+                    for (var item : list) {
                         this.environment = new Environment(previous);
                         this.environment.define(stmt.name.lexeme(), item);
                         try {
@@ -889,14 +890,14 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                 throw new RuntimeError(stmt.name, "Chỉ có thể duyệt qua một DanhSách.");
             }
         } else {
-            int startVal = ((Number) evaluate(stmt.start)).intValue();
-            int endVal = ((Number) evaluate(stmt.end)).intValue();
-            boolean inclusive = stmt.operator.lexeme().equals("đến_hết");
+            var startVal = ((Number) evaluate(stmt.start)).intValue();
+            var endVal = ((Number) evaluate(stmt.end)).intValue();
+            var inclusive = stmt.operator.lexeme().equals("đến_hết");
 
             Environment previous = this.environment;
             try {
                 if (startVal <= endVal) {
-                    for (int i = startVal; inclusive ? i <= endVal : i < endVal; i++) {
+                    for (var i = startVal; inclusive ? i <= endVal : i < endVal; i++) {
                         this.environment = new Environment(previous);
                         this.environment.define(stmt.name.lexeme(), i);
                         try {
@@ -906,7 +907,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                         }
                     }
                 } else {
-                    for (int i = startVal; inclusive ? i >= endVal : i > endVal; i--) {
+                    for (var i = startVal; inclusive ? i >= endVal : i > endVal; i--) {
                         this.environment = new Environment(previous);
                         this.environment.define(stmt.name.lexeme(), i);
                         try {
@@ -937,10 +938,10 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitSwitchStmt(Stmt.Switch stmt) {
-        Object value = evaluate(stmt.value);
+        var value = evaluate(stmt.value);
         for (Stmt.SwitchCase sc : stmt.cases) {
-            boolean matched = false;
-            for (Expr pattern : sc.patterns) {
+            var matched = false;
+            for (var pattern : sc.patterns) {
                 if (isMatch(value, pattern)) {
                     matched = true;
                     break;

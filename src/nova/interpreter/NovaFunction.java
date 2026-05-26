@@ -1,6 +1,8 @@
 package nova.interpreter;
 
 import nova.ast.Stmt;
+import nova.interpreter.exception.ReturnException;
+
 import java.util.List;
 
 /**
@@ -35,8 +37,8 @@ public class NovaFunction implements NovaCallable {
 
     @Override
     public Object call(Interpreter interpreter, List<Object> arguments) {
-        Environment environment = new Environment(closure);
-        for (int i = 0; i < declaration.parameters.size(); i++) {
+        var environment = new Environment(closure);
+        for (var i = 0; i < declaration.parameters.size(); i++) {
             environment.define(declaration.parameters.get(i).name.lexeme(), arguments.get(i));
         }
 

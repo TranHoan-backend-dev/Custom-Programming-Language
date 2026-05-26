@@ -42,10 +42,10 @@ public class Parser {
         while (!isAtEnd()) {
             try {
                 if (check(TokenType.RIGHT_RACE)) {
-                    Token brace = advance();
+                    var brace = advance();
                     throw error(brace, "Dấu ngoặc nhọn đóng '}' không hợp lệ ngoài khối lệnh.");
                 }
-                Stmt decl = declaration();
+                var decl = declaration();
                 if (decl != null) {
                     statements.add(decl);
                 }
@@ -107,21 +107,21 @@ public class Parser {
      * @return Đối tượng {@link Stmt.Function}
      */
     private Stmt funcDecl() {
-        Token name = consume(TokenType.IDENTIFIER, "Yêu cầu tên hàm sau từ khóa 'hàm'.");
+        var name = consume(TokenType.IDENTIFIER, "Yêu cầu tên hàm sau từ khóa 'hàm'.");
         consume(TokenType.LEFT_PAREN, "Yêu cầu dấu '(' sau tên hàm.");
         
         List<Stmt.Parameter> parameters = new ArrayList<>();
         if (!check(TokenType.RIGHT_PAREN)) {
             do {
-                Token paramType = type();
-                Token paramName = consume(TokenType.IDENTIFIER, "Yêu cầu tên tham số.");
+                var paramType = type();
+                var paramName = consume(TokenType.IDENTIFIER, "Yêu cầu tên tham số.");
                 parameters.add(new Stmt.Parameter(paramName, paramType));
             } while (match(TokenType.COMMA));
         }
         consume(TokenType.RIGHT_PAREN, "Yêu cầu dấu ')' sau danh sách tham số.");
         
         consume(TokenType.ARROW, "Yêu cầu toán tử '->' để chỉ định kiểu trả về.");
-        Token returnType = type();
+        var returnType = type();
         
         consume(TokenType.LEFT_RACE, "Yêu cầu dấu '{' trước thân hàm.");
         List<Stmt> body = block();
@@ -131,21 +131,13 @@ public class Parser {
 
     /**
      * Phân tích khai báo biến hoặc hằng số.
-     * <pre>
-     * varDecl → ( "biến" | "biến" "khả_biến" | "hằng_số" ) type? IDENTIFIER ( "=" expression )? ";" ;
-     * </pre>
-     * 
-     * @return Đối tượng {@link Stmt.Var}
-     */
-    /**
-     * Phân tích khai báo biến hoặc hằng số.
      * Hỗ trợ khai báo biến thông thường và khai báo giải cấu trúc Tuple (destructuring) dạng `biến (a, b) = biểu_thức;`.
      * 
      * @return Đối tượng {@link Stmt.Var} đại diện cho câu lệnh khai báo biến
      * @throws ParseError nếu phát hiện lỗi cú pháp trong quá trình phân tích
      */
     private Stmt varDecl() {
-        Token keyword = advance(); // VAR hoặc CONST
+        var keyword = advance(); // VAR hoặc CONST
         Token mutToken = null;
         
         if (keyword.type() == TokenType.VAR && match(TokenType.MUT)) {
@@ -157,15 +149,15 @@ public class Parser {
         
         if (check(TokenType.LEFT_PAREN)) {
             consume(TokenType.LEFT_PAREN, "Yêu cầu dấu '(' để bắt đầu khai báo giải cấu trúc (destructuring).");
-            StringBuilder nameBuilder = new StringBuilder("(");
-            boolean first = true;
+            var nameBuilder = new StringBuilder("(");
+            var first = true;
             while (!check(TokenType.RIGHT_PAREN) && !isAtEnd()) {
                 if (!first) {
                     consume(TokenType.COMMA, "Yêu cầu dấu ',' ngăn cách giữa các tên biến.");
                     nameBuilder.append(", ");
                 }
                 first = false;
-                Token varName = consume(TokenType.IDENTIFIER, "Yêu cầu tên biến trong giải cấu trúc.");
+                var varName = consume(TokenType.IDENTIFIER, "Yêu cầu tên biến trong giải cấu trúc.");
                 nameBuilder.append(varName.lexeme());
             }
             consume(TokenType.RIGHT_PAREN, "Yêu cầu dấu ')' để kết thúc khai báo giải cấu trúc.");
@@ -188,8 +180,8 @@ public class Parser {
         }
         
         consume(TokenType.SEMICOLON, "Yêu cầu dấu ';' sau khai báo biến.");
-        
-        Token finalKeyword = (mutToken != null) ? mutToken : keyword;
+
+        var finalKeyword = (mutToken != null) ? mutToken : keyword;
         return new Stmt.Var(finalKeyword, name, type, initializer);
     }
 
@@ -203,11 +195,11 @@ public class Parser {
      */
     private Token type() {
         if (match(TokenType.LEFT_PAREN)) {
-            StringBuilder builder = new StringBuilder("(");
+            var builder = new StringBuilder("(");
             if (!check(TokenType.RIGHT_PAREN)) {
                 do {
-                    Token itemType = type();
-                    Token itemName = consume(TokenType.IDENTIFIER, "Yêu cầu tên trường trong Tuple.");
+                    var itemType = type();
+                    var itemName = consume(TokenType.IDENTIFIER, "Yêu cầu tên trường trong Tuple.");
                     builder.append(itemType.lexeme()).append(" ").append(itemName.lexeme());
                 } while (match(TokenType.COMMA) && appendComma(builder));
             }
@@ -222,13 +214,13 @@ public class Parser {
         }
         
         if (checkFunctionType()) {
-            Token firstToken = advance();
-            StringBuilder builder = new StringBuilder(firstToken.lexeme());
+            var firstToken = advance();
+            var builder = new StringBuilder(firstToken.lexeme());
             consume(TokenType.LEFT_PAREN, "Yêu cầu dấu '(' sau từ khóa hàm.");
             builder.append("(");
             if (!check(TokenType.RIGHT_PAREN)) {
                 do {
-                    Token paramType = type();
+                    var paramType = type();
                     builder.append(paramType.lexeme());
                 } while (match(TokenType.COMMA) && appendComma(builder));
             }
@@ -237,8 +229,8 @@ public class Parser {
             
             consume(TokenType.ARROW, "Yêu cầu toán tử '->' để chỉ định kiểu trả về.");
             builder.append(" -> ");
-            
-            Token returnType = type();
+
+            var returnType = type();
             builder.append(returnType.lexeme());
             
             if (match(TokenType.QUESTION)) {
@@ -247,16 +239,15 @@ public class Parser {
             
             return new Token(TokenType.IDENTIFIER, builder.toString());
         }
-        
-        Token first = peek();
+
         if (checkTypeKeyword()) {
-            Token typeToken = advance();
-            StringBuilder builder = new StringBuilder(typeToken.lexeme());
+            var typeToken = advance();
+            var builder = new StringBuilder(typeToken.lexeme());
             
             if (match(TokenType.LESS_THAN)) {
                 builder.append("<");
                 do {
-                    Token innerType = type();
+                    var innerType = type();
                     builder.append(innerType.lexeme());
                 } while (match(TokenType.COMMA) && appendComma(builder));
                 consume(TokenType.GREATER_THAN, "Yêu cầu dấu '>' để đóng kiểu generic.");
@@ -280,8 +271,8 @@ public class Parser {
      */
     private boolean checkFunctionType() {
         if (isAtEnd()) return false;
-        Token first = peek();
-        boolean isFuncKeyword = (first.type() == TokenType.FUNCTION) || 
+        var first = peek();
+        var isFuncKeyword = (first.type() == TokenType.FUNCTION) ||
                                (first.type() == TokenType.IDENTIFIER && "func".equals(first.lexeme()));
         if (!isFuncKeyword) return false;
         
@@ -325,9 +316,9 @@ public class Parser {
      * @return Đối tượng {@link Stmt.If}
      */
     private Stmt ifStatement() {
-        Expr condition = expression();
+        var condition = expression();
         consume(TokenType.THEN, "Yêu cầu từ khóa 'thì' sau điều kiện 'nếu'.");
-        Stmt thenBranch = statement();
+        var thenBranch = statement();
         Stmt elseBranch = null;
         
         if (match(TokenType.ELSE_IF)) {
@@ -346,9 +337,9 @@ public class Parser {
      * @return Đối tượng {@link Stmt.While}
      */
     private Stmt loopStatement() {
-        Expr condition = expression();
+        var condition = expression();
         match(TokenType.THEN);
-        Stmt body = statement();
+        var body = statement();
         return new Stmt.While(condition, body);
     }
 
@@ -358,20 +349,20 @@ public class Parser {
      * @return Đối tượng {@link Stmt.For}
      */
     private Stmt forStatement() {
-        Token name = consume(TokenType.IDENTIFIER, "Yêu cầu tên biến lặp sau từ khóa 'duyệt'.");
+        var name = consume(TokenType.IDENTIFIER, "Yêu cầu tên biến lặp sau từ khóa 'duyệt'.");
         
         if (match(TokenType.IN)) { // từ khóa "từ"
-            Expr start = expression();
+            var start = expression();
             if (!check(TokenType.RANGE_EXCLUSIVE) && !check(TokenType.RANGE_INCLUSIVE)) {
                 throw error(peek(), "Yêu cầu toán tử khoảng số ('đến' hoặc 'đến_hết').");
             }
-            Token operator = advance();
-            Expr end = expression();
-            Stmt body = statement();
+            var operator = advance();
+            var end = expression();
+            var body = statement();
             return new Stmt.For(name, start, operator, end, body);
         } else if (match(TokenType.OF)) { // từ khóa "của"
-            Expr collection = expression();
-            Stmt body = statement();
+            var collection = expression();
+            var body = statement();
             return new Stmt.For(name, collection, body);
         } else {
             throw error(peek(), "Yêu cầu từ khóa 'từ' hoặc 'của' trong vòng lặp 'duyệt'.");
@@ -384,7 +375,7 @@ public class Parser {
      * @return Đối tượng {@link Stmt.Switch}
      */
     private Stmt switchStatement() {
-        Expr value = expression();
+        var value = expression();
         consume(TokenType.LEFT_RACE, "Yêu cầu dấu '{' để bắt đầu khối 'trường_hợp'.");
         
         List<Stmt.SwitchCase> cases = new ArrayList<>();
@@ -419,7 +410,7 @@ public class Parser {
         if (check(TokenType.LEFT_RACE)) {
             body = statement();
         } else {
-            Expr expr = expression();
+            var expr = expression();
             match(TokenType.SEMICOLON); // Tùy chọn tiêu thụ dấu chấm phẩy
             body = new Stmt.Expression(expr);
         }
@@ -433,7 +424,7 @@ public class Parser {
      * @return Đối tượng {@link Stmt.Return}
      */
     private Stmt returnStatement() {
-        Token keyword = previous();
+        var keyword = previous();
         Expr value = null;
         if (!check(TokenType.SEMICOLON)) {
             value = expression();
@@ -448,7 +439,7 @@ public class Parser {
      * @return Đối tượng {@link Stmt.Break}
      */
     private Stmt breakStatement() {
-        Token keyword = previous();
+        var keyword = previous();
         consume(TokenType.SEMICOLON, "Yêu cầu dấu ';' sau câu lệnh 'dừng'.");
         return new Stmt.Break(keyword);
     }
@@ -459,7 +450,7 @@ public class Parser {
      * @return Đối tượng {@link Stmt.Continue}
      */
     private Stmt continueStatement() {
-        Token keyword = previous();
+        var keyword = previous();
         consume(TokenType.SEMICOLON, "Yêu cầu dấu ';' sau câu lệnh 'tiếp'.");
         return new Stmt.Continue(keyword);
     }
@@ -473,9 +464,9 @@ public class Parser {
         List<Stmt> statements = new ArrayList<>();
         while (!check(TokenType.RIGHT_RACE) && !isAtEnd()) {
             if (peek().type() != TokenType.FUNCTION && !checkVarDecl()) {
-                int start = current;
+                var start = current;
                 try {
-                    Expr expr = expression();
+                    var expr = expression();
                     if (check(TokenType.RIGHT_RACE)) {
                         statements.add(new Stmt.Expression(expr));
                         break;
@@ -486,7 +477,7 @@ public class Parser {
                     current = start;
                 }
             }
-            Stmt decl = declaration();
+            var decl = declaration();
             if (decl != null) {
                 statements.add(decl);
             }
@@ -501,7 +492,7 @@ public class Parser {
      * @return Đối tượng {@link Stmt.Expression}
      */
     private Stmt expressionStatement() {
-        Expr expr = expression();
+        var expr = expression();
         consume(TokenType.SEMICOLON, "Yêu cầu dấu ';' sau câu lệnh biểu thức.");
         return new Stmt.Expression(expr);
     }
@@ -525,14 +516,14 @@ public class Parser {
      * @return Đối tượng {@link Expr} gán hoặc biểu thức ưu tiên tiếp theo
      */
     private Expr assignment() {
-        Expr expr = or();
+        var expr = or();
         
         if (match(TokenType.ASSIGN)) {
-            Token equals = previous();
-            Expr value = assignment();
+            var equals = previous();
+            var value = assignment();
             
             if (expr instanceof Expr.Variable) {
-                Token name = ((Expr.Variable) expr).name;
+                var name = ((Expr.Variable) expr).name;
                 return new Expr.Assign(name, value);
             }
             
@@ -548,10 +539,10 @@ public class Parser {
      * @return Đối tượng {@link Expr} logic OR hoặc biểu thức tiếp theo
      */
     private Expr or() {
-        Expr expr = and();
+        var expr = and();
         while (match(TokenType.OR)) {
-            Token operator = previous();
-            Expr right = and();
+            var operator = previous();
+            var right = and();
             expr = new Expr.Logical(expr, operator, right);
         }
         return expr;
@@ -563,10 +554,10 @@ public class Parser {
      * @return Đối tượng {@link Expr} logic AND hoặc biểu thức tiếp theo
      */
     private Expr and() {
-        Expr expr = equality();
+        var expr = equality();
         while (match(TokenType.AND)) {
-            Token operator = previous();
-            Expr right = equality();
+            var operator = previous();
+            var right = equality();
             expr = new Expr.Logical(expr, operator, right);
         }
         return expr;
@@ -578,10 +569,10 @@ public class Parser {
      * @return Đối tượng {@link Expr} hoặc biểu thức tiếp theo
      */
     private Expr equality() {
-        Expr expr = comparison();
+        var expr = comparison();
         while (match(TokenType.NOT_EQUAL, TokenType.EQUAL)) {
-            Token operator = previous();
-            Expr right = comparison();
+            var operator = previous();
+            var right = comparison();
             expr = new Expr.Binary(expr, operator, right);
         }
         return expr;
@@ -593,10 +584,10 @@ public class Parser {
      * @return Đối tượng {@link Expr} hoặc biểu thức tiếp theo
      */
     private Expr comparison() {
-        Expr expr = term();
+        var expr = term();
         while (match(TokenType.GREATER_THAN, TokenType.GREATER_THAN_EQUAL, TokenType.LESS_THAN, TokenType.LESS_THAN_EQUAL)) {
-            Token operator = previous();
-            Expr right = term();
+            var operator = previous();
+            var right = term();
             expr = new Expr.Binary(expr, operator, right);
         }
         return expr;
@@ -608,10 +599,10 @@ public class Parser {
      * @return Đối tượng {@link Expr} hoặc biểu thức tiếp theo
      */
     private Expr term() {
-        Expr expr = factor();
+        var expr = factor();
         while (match(TokenType.MINUS, TokenType.PLUS)) {
-            Token operator = previous();
-            Expr right = factor();
+            var operator = previous();
+            var right = factor();
             expr = new Expr.Binary(expr, operator, right);
         }
         return expr;
@@ -623,10 +614,10 @@ public class Parser {
      * @return Đối tượng {@link Expr} hoặc biểu thức tiếp theo
      */
     private Expr factor() {
-        Expr expr = unary();
+        var expr = unary();
         while (match(TokenType.SLASH, TokenType.STAR, TokenType.PERCENTAGE)) {
-            Token operator = previous();
-            Expr right = unary();
+            var operator = previous();
+            var right = unary();
             expr = new Expr.Binary(expr, operator, right);
         }
         return expr;
@@ -639,8 +630,8 @@ public class Parser {
      */
     private Expr unary() {
         if (match(TokenType.NOT, TokenType.MINUS)) {
-            Token operator = previous();
-            Expr right = unary();
+            var operator = previous();
+            var right = unary();
             return new Expr.Unary(operator, right);
         }
         return call();
@@ -652,12 +643,12 @@ public class Parser {
      * @return Đối tượng {@link Expr}
      */
     private Expr call() {
-        Expr expr = primary();
+        var expr = primary();
         while (true) {
             if (match(TokenType.LEFT_PAREN)) {
                 expr = finishCall(expr);
             } else if (match(TokenType.DOT)) {
-                Token name = consume(TokenType.IDENTIFIER, "Yêu cầu tên thuộc tính hoặc phương thức sau dấu '.'.");
+                var name = consume(TokenType.IDENTIFIER, "Yêu cầu tên thuộc tính hoặc phương thức sau dấu '.'.");
                 expr = new Expr.Get(expr, name);
             } else {
                 break;
@@ -679,7 +670,7 @@ public class Parser {
                 arguments.add(expression());
             } while (match(TokenType.COMMA));
         }
-        Token paren = consume(TokenType.RIGHT_PAREN, "Yêu cầu dấu ')' sau danh sách đối số.");
+        var paren = consume(TokenType.RIGHT_PAREN, "Yêu cầu dấu ')' sau danh sách đối số.");
         return new Expr.Call(callee, paren, arguments);
     }
 
@@ -697,7 +688,7 @@ public class Parser {
         
         if (match(TokenType.IF, TokenType.SWITCH)) {
             current--; // Quay lại để statement() nhận biết từ khóa
-            Stmt stmt = statement();
+            var stmt = statement();
             return new Expr.StmtExpr(stmt);
         }
         
@@ -714,7 +705,7 @@ public class Parser {
             if (match(TokenType.RIGHT_PAREN)) {
                 return new Expr.Tuple(new ArrayList<>());
             }
-            Expr expr = expression();
+            var expr = expression();
             if (match(TokenType.COMMA)) {
                 List<Expr> expressions = new ArrayList<>();
                 expressions.add(expr);
@@ -773,15 +764,15 @@ public class Parser {
      * @return {@code true} nếu có định nghĩa kiểu rõ ràng, {@code false} nếu tự suy luận kiểu
      */
     private boolean isTypeSpecified() {
-        int temp = current;
+        var temp = current;
         if (!isTypeToken(temp)) return false;
         temp++;
         
         if (temp < tokens.size() && tokens.get(temp).type() == TokenType.LESS_THAN) {
             temp++;
-            int count = 1;
+            var count = 1;
             while (temp < tokens.size() && count > 0) {
-                TokenType t = tokens.get(temp).type();
+                var t = tokens.get(temp).type();
                 if (t == TokenType.LESS_THAN) count++;
                 else if (t == TokenType.GREATER_THAN) count--;
                 temp++;
@@ -803,7 +794,7 @@ public class Parser {
      */
     private boolean isTypeToken(int index) {
         if (index >= tokens.size()) return false;
-        TokenType t = tokens.get(index).type();
+        var t = tokens.get(index).type();
         return t == TokenType.IDENTIFIER ||
                t == TokenType.TYPE_STRING ||
                t == TokenType.TYPE_CHAR ||
@@ -854,7 +845,7 @@ public class Parser {
      * @return {@code true} nếu khớp và đã consume, {@code false} nếu không khớp
      */
     private boolean match(TokenType... types) {
-        for (TokenType type : types) {
+        for (var type : types) {
             if (check(type)) {
                 advance();
                 return true;

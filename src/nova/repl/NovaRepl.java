@@ -11,11 +11,13 @@ import java.util.Map;
 
 import nova.lexer.Lexer;
 import nova.lexer.Token;
+import nova.lexer.TokenType;
 import nova.parser.Parser;
 import nova.interpreter.Interpreter;
 import nova.ast.Stmt;
-import nova.interpreter.RuntimeError;
-import nova.lexer.TokenType;
+import nova.interpreter.exception.RuntimeError;
+
+import nova.utils.NovaLogger;
 
 /**
  * Read-Eval-Print Loop (REPL) cho ngôn ngữ Nova.
@@ -31,7 +33,6 @@ public class NovaRepl {
               :vars   – Hiển thị danh sách các biến đang có trong bộ nhớ""";
 
     private final Interpreter interpreter;
-    private final List<String> history = new ArrayList<>();
     private final InputStream in;
     private final PrintStream out;
 
@@ -88,11 +89,11 @@ public class NovaRepl {
 
                 String source = sourceBuilder.toString();
                 runSource(source);
-                history.add(source.trim());
                 sourceBuilder.setLength(0); // clear for next input
             }
         } catch (Exception e) {
             out.println("Lỗi REPL: " + e.getMessage());
+            NovaLogger.error("Lỗi REPL", e);
         }
     }
 
@@ -104,7 +105,7 @@ public class NovaRepl {
             case ":vars":
                 Map<String, Object> globals = interpreter.getGlobals();
                 boolean hasVars = false;
-                for (Object value : globals.values()) {
+                for (var value : globals.values()) {
                     if (!(value instanceof nova.interpreter.NovaCallable)) {
                         hasVars = true;
                         break;
@@ -137,7 +138,7 @@ public class NovaRepl {
     private void runSource(String source) {
         if (source.trim().isEmpty()) return;
         try {
-            Lexer lexer = new Lexer(source);
+            var lexer = new Lexer(source);
             List<Token> tokens = new ArrayList<>();
             while (true) {
                 Token token = lexer.nextToken();
@@ -146,11 +147,11 @@ public class NovaRepl {
                     break;
                 }
             }
-            Parser parser = new Parser(tokens);
+            var parser = new Parser(tokens);
             List<Stmt> statements = parser.parse();
             // Xử lý in kết quả trực tiếp cho REPL nếu là ExpressionStmt
             if (statements.size() == 1 && statements.getFirst() instanceof Stmt.Expression) {
-                Object result = interpreter.evaluateExpressionForRepl(((Stmt.Expression) statements.getFirst()).expression);
+                var result = interpreter.evaluateExpressionForRepl(((Stmt.Expression) statements.getFirst()).expression);
                 if (result != null) {
                     out.println(Interpreter.stringify(result));
                 }
@@ -159,18 +160,22 @@ public class NovaRepl {
             }
         } catch (RuntimeError e) {
             out.println("[Runtime Error] " + e.getMessage());
+            NovaLogger.error("REPL Runtime Error: " + e.getMessage(), e);
         } catch (Exception e) {
             out.println("[Lỗi] " + e.getMessage());
+            NovaLogger.error("REPL Exception", e);
         }
     }
 
     private boolean isBalanced(String text) {
-        int parens = 0, braces = 0, brackets = 0;
-        boolean inString = false;
-        boolean escape = false;
+        var parens = 0;
+        var braces = 0;
+        var brackets = 0;
+        var inString = false;
+        var escape = false;
 
-        for (int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
+        for (var i = 0; i < text.length(); i++) {
+            var c = text.charAt(i);
             if (escape) {
                 escape = false;
                 continue;

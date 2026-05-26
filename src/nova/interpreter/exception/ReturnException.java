@@ -1,4 +1,4 @@
-package nova.interpreter;
+package nova.interpreter.exception;
 
 /**
  * Ngoại lệ điều khiển đặc biệt dùng để thoát sớm khỏi hàm và chuyển giá trị trả về

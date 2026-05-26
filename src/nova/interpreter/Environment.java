@@ -1,5 +1,6 @@
 package nova.interpreter;
 
+import nova.interpreter.exception.RuntimeError;
 import nova.lexer.Token;
 import java.util.HashMap;
 import java.util.Map;

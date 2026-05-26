@@ -2,18 +2,23 @@ package nova.interpreter;
 
 import nova.ast.Expr;
 import nova.ast.Stmt;
+import nova.interpreter.exception.SemanticError;
 import nova.lexer.Token;
-import nova.lexer.TokenType;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import nova.utils.NovaLogger;
+
+import static nova.interpreter.Interpreter.getTokens;
+
 /**
  * Lớp TypeChecker thực hiện phân tích kiểu tĩnh (Static Type Checking) và kiểm tra an toàn Null (Null Safety)
  * trên cây cú pháp trừu tượng (AST) của ngôn ngữ Nova trước khi chương trình được chạy thực sự.
- * 
+ *
  * @author XUAN HOAN
  */
 public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
@@ -21,14 +26,16 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
     private final Stack<Map<String, String>> scopes = new Stack<>();
     private final Map<String, String> globals = new HashMap<>();
     private final List<SemanticError> errors = new ArrayList<>();
-    
-    /** Kiểu trả về của hàm hiện tại đang phân tích (dùng để kiểm tra câu lệnh trả_về). */
+
+    /**
+     * Kiểu trả về của hàm hiện tại đang phân tích (dùng để kiểm tra câu lệnh trả_về).
+     */
     private String currentReturnType = null;
 
     /**
      * Khởi tạo trình kiểm tra kiểu liên kết với Interpreter chỉ định.
      * Đăng ký các hàm dựng sẵn hoặc môi trường cơ sở nếu cần.
-     * 
+     *
      * @param interpreter Trình thông dịch chứa thông tin tầm vực tĩnh
      */
     public TypeChecker(Interpreter interpreter) {
@@ -44,7 +51,7 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
 
     /**
      * Đăng ký kiểu dữ liệu của một biến toàn cục (phục vụ cho kiểm thử).
-     * 
+     *
      * @param name Tên biến toàn cục
      * @param type Kiểu dữ liệu tương ứng
      */
@@ -54,21 +61,20 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
 
     /**
      * Thực hiện kiểm tra kiểu trên danh sách các câu lệnh AST.
-     * 
+     *
      * @param statements Danh sách câu lệnh cần kiểm tra
      * @return Danh sách các lỗi ngữ nghĩa/kiểu phát hiện được
      */
     public List<SemanticError> check(List<Stmt> statements) {
         // Pha 1: Đăng ký chữ ký hàm toàn cục trước để hỗ trợ gọi đệ quy hoặc gọi chéo
-        for (Stmt stmt : statements) {
-            if (stmt instanceof Stmt.Function) {
-                Stmt.Function func = (Stmt.Function) stmt;
+        for (var stmt : statements) {
+            if (stmt instanceof Stmt.Function func) {
                 globals.put(func.name.lexeme(), getFunctionSignature(func));
             }
         }
-        
+
         // Pha 2: Duyệt kiểm tra kiểu chi tiết từng câu lệnh
-        for (Stmt statement : statements) {
+        for (var statement : statements) {
             try {
                 resolve(statement);
             } catch (TypeException e) {
@@ -80,7 +86,7 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
 
     /**
      * Kiểm tra xem có lỗi kiểu nào được phát hiện hay không.
-     * 
+     *
      * @return {@code true} nếu có lỗi, ngược lại {@code false}
      */
     public boolean hasErrors() {
@@ -89,17 +95,19 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
 
     /**
      * Báo lỗi kiểu tại một Token cụ thể.
-     * 
-     * @param token Token gây lỗi
+     *
+     * @param token   Token gây lỗi
      * @param message Thông điệp mô tả lỗi kiểu dữ liệu
      */
     private void error(Token token, String message) {
-        errors.add(new SemanticError(token, message));
+        var err = new SemanticError(token, message);
+        errors.add(err);
+        NovaLogger.error("Type Error: " + err.getMessage());
     }
 
     /**
      * Thực thi kiểm tra kiểu cho một câu lệnh.
-     * 
+     *
      * @param stmt Câu lệnh cần kiểm tra
      */
     private void resolve(Stmt stmt) {
@@ -108,12 +116,12 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
 
     /**
      * Đánh giá kiểu dữ liệu của một biểu thức và trả về tên kiểu dạng chuỗi đã chuẩn hóa.
-     * 
+     *
      * @param expr Biểu thức cần đánh giá kiểu
      * @return Chuỗi kiểu dữ liệu (ví dụ: "int", "string", "double")
      */
     private String resolve(Expr expr) {
-        String type = expr.accept(this);
+        var type = expr.accept(this);
         return normalizeType(type);
     }
 
@@ -133,7 +141,7 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
 
     /**
      * Đăng ký kiểu dữ liệu của một biến trong scope hiện tại.
-     * 
+     *
      * @param name Tên biến
      * @param type Kiểu dữ liệu của biến
      */
@@ -147,13 +155,13 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
 
     /**
      * Lấy kiểu dữ liệu của biến tĩnh thông qua khoảng cách tầm vực (distance) hoặc từ global.
-     * 
+     *
      * @param name Tên biến cần truy vấn kiểu
      * @param expr Biểu thức biến chứa thông tin distance
      * @return Kiểu dữ liệu của biến
      */
     private String getVariableType(String name, Expr expr) {
-        int distance = interpreter.getDistance(expr);
+        var distance = interpreter.getDistance(expr);
         if (distance >= 0) {
             return scopes.get(scopes.size() - 1 - distance).get(name);
         }
@@ -162,12 +170,12 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
 
     /**
      * Lấy kiểu dữ liệu của một biến trong scope cục bộ gần nhất bằng tên (dùng cho Smart Casting).
-     * 
+     *
      * @param name Tên biến
      * @return Kiểu dữ liệu tương ứng, hoặc {@code null} nếu không tìm thấy
      */
     private String getVariableType(String name) {
-        for (int i = scopes.size() - 1; i >= 0; i--) {
+        for (var i = scopes.size() - 1; i >= 0; i--) {
             if (scopes.get(i).containsKey(name)) {
                 return scopes.get(i).get(name);
             }
@@ -177,12 +185,12 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
 
     /**
      * Tạm thời thiết lập lại kiểu dữ liệu của một biến (dùng cho Smart Casting).
-     * 
+     *
      * @param name Tên biến
      * @param type Kiểu mới
      */
     private void setVariableType(String name, String type) {
-        for (int i = scopes.size() - 1; i >= 0; i--) {
+        for (var i = scopes.size() - 1; i >= 0; i--) {
             if (scopes.get(i).containsKey(name)) {
                 scopes.get(i).put(name, normalizeType(type));
                 return;
@@ -193,35 +201,57 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
 
     /**
      * Chuẩn hóa kiểu dữ liệu từ tiếng Việt sang tiếng Anh và chuẩn hóa các khoảng trắng.
-     * 
+     *
      * @param type Chuỗi kiểu dữ liệu thô
      * @return Kiểu dữ liệu chuẩn hóa dạng tiếng Anh
      */
     private String normalizeType(String type) {
         if (type == null) return "void";
         type = type.trim();
-        if (type.equals("số_nguyên") || type.equals("số_nguyên_32")) return "int";
-        if (type.equals("số_nguyên_16")) return "int16";
-        if (type.equals("số_nguyên_64")) return "int64";
-        if (type.equals("số_thực_kép")) return "double";
-        if (type.equals("số_thực_đơn")) return "float";
-        if (type.equals("ký_tự")) return "char";
-        if (type.equals("chuỗi")) return "string";
-        if (type.equals("logic")) return "boolean";
-        if (type.equals("trống")) return "void";
-        if (type.equals("k_tồn_tại")) return "null";
+        switch (type) {
+            case "số_nguyên", "số_nguyên_32" -> {
+                return "int";
+            }
+            case "số_nguyên_16" -> {
+                return "int16";
+            }
+            case "số_nguyên_64" -> {
+                return "int64";
+            }
+            case "số_thực_kép" -> {
+                return "double";
+            }
+            case "số_thực_đơn" -> {
+                return "float";
+            }
+            case "ký_tự" -> {
+                return "char";
+            }
+            case "chuỗi" -> {
+                return "string";
+            }
+            case "logic" -> {
+                return "boolean";
+            }
+            case "trống" -> {
+                return "void";
+            }
+            case "k_tồn_tại" -> {
+                return "null";
+            }
+        }
 
         if (type.endsWith("?")) {
-            String base = type.substring(0, type.length() - 1);
+            var base = type.substring(0, type.length() - 1);
             return normalizeType(base) + "?";
         }
 
         if (type.startsWith("func(") || type.startsWith("function(") || type.startsWith("hàm(")) {
-            int startParen = type.indexOf('(');
-            int endParen = -1;
-            int depth = 0;
-            for (int i = startParen; i < type.length(); i++) {
-                char c = type.charAt(i);
+            var startParen = type.indexOf('(');
+            var endParen = -1;
+            var depth = 0;
+            for (var i = startParen; i < type.length(); i++) {
+                var c = type.charAt(i);
                 if (c == '(') depth++;
                 else if (c == ')') {
                     depth--;
@@ -232,28 +262,19 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
                 }
             }
             if (endParen != -1) {
-                String paramsStr = type.substring(startParen + 1, endParen).trim();
+                var paramsStr = type.substring(startParen + 1, endParen).trim();
                 List<String> params = new ArrayList<>();
                 if (!paramsStr.isEmpty()) {
-                    int pDepth = 0;
-                    int start = 0;
-                    for (int i = 0; i < paramsStr.length(); i++) {
-                        char c = paramsStr.charAt(i);
-                        if (c == '<' || c == '(') pDepth++;
-                        else if (c == '>' || c == ')') pDepth--;
-                        else if (c == ',' && pDepth == 0) {
-                            params.add(paramsStr.substring(start, i).trim());
-                            start = i + 1;
-                        }
-                    }
-                    params.add(paramsStr.substring(start).trim());
+                    var pDepth = 0;
+                    var start = 0;
+                    handleParams(params, paramsStr, pDepth, start);
                 }
-                
-                int arrowIdx = type.indexOf("->", endParen);
+
+                var arrowIdx = type.indexOf("->", endParen);
                 if (arrowIdx != -1) {
-                    String returnStr = type.substring(arrowIdx + 2).trim();
-                    StringBuilder sb = new StringBuilder("func(");
-                    for (int i = 0; i < params.size(); i++) {
+                    var returnStr = type.substring(arrowIdx + 2).trim();
+                    var sb = new StringBuilder("func(");
+                    for (var i = 0; i < params.size(); i++) {
                         sb.append(normalizeType(params.get(i)));
                         if (i < params.size() - 1) sb.append(", ");
                     }
@@ -265,36 +286,27 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
         }
 
         if (type.contains("<") && type.endsWith(">")) {
-            int idx = type.indexOf('<');
-            String genericName = type.substring(0, idx).trim();
-            String inner = type.substring(idx + 1, type.length() - 1).trim();
+            var idx = type.indexOf('<');
+            var genericName = type.substring(0, idx).trim();
+            var inner = type.substring(idx + 1, type.length() - 1).trim();
             return genericName + "<" + normalizeType(inner) + ">";
         }
 
         if (type.startsWith("(") && type.endsWith(")")) {
-            String content = type.substring(1, type.length() - 1).trim();
+            var content = type.substring(1, type.length() - 1).trim();
             if (content.isEmpty()) return "()";
-            int depth = 0;
-            int start = 0;
+            var depth = 0;
+            var start = 0;
             List<String> parts = new ArrayList<>();
-            for (int i = 0; i < content.length(); i++) {
-                char c = content.charAt(i);
-                if (c == '<' || c == '(') depth++;
-                else if (c == '>' || c == ')') depth--;
-                else if (c == ',' && depth == 0) {
-                    parts.add(content.substring(start, i).trim());
-                    start = i + 1;
-                }
-            }
-            parts.add(content.substring(start).trim());
+            handleParams(parts, content, depth, start);
 
-            StringBuilder sb = new StringBuilder("(");
-            for (int i = 0; i < parts.size(); i++) {
-                String part = parts.get(i);
-                int lastSpace = part.lastIndexOf(' ');
+            var sb = new StringBuilder("(");
+            for (var i = 0; i < parts.size(); i++) {
+                var part = parts.get(i);
+                var lastSpace = part.lastIndexOf(' ');
                 if (lastSpace != -1) {
-                    String t = part.substring(0, lastSpace).trim();
-                    String name = part.substring(lastSpace).trim();
+                    var t = part.substring(0, lastSpace).trim();
+                    var name = part.substring(lastSpace).trim();
                     sb.append(normalizeType(t)).append(" ").append(name);
                 } else {
                     sb.append(normalizeType(part));
@@ -311,7 +323,7 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
     /**
      * Kiểm tra xem kiểu nguồn (source) có tương thích và gán được cho kiểu đích (target) hay không.
      * Hỗ trợ Null Safety và ép kiểu tự động số nguyên thành số thực.
-     * 
+     *
      * @param target Kiểu dữ liệu đích mong muốn
      * @param source Kiểu dữ liệu nguồn truyền vào
      * @return {@code true} nếu tương thích, ngược lại {@code false}
@@ -353,28 +365,23 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
         }
 
         // Ép kiểu số học tự động (Numeric coercion/widening)
-        if (target.equals("double")) {
-            return source.equals("int") || source.equals("int16") || source.equals("int32") || source.equals("int64") || source.equals("float");
-        }
-        if (target.equals("float")) {
-            return source.equals("int") || source.equals("int16") || source.equals("int32");
-        }
-        if (target.equals("int64")) {
-            return source.equals("int") || source.equals("int16") || source.equals("int32");
-        }
-        if (target.equals("int") || target.equals("int32")) {
-            return source.equals("int16");
-        }
+        return switch (target) {
+            case "double" ->
+                    source.equals("int") || source.equals("int16") || source.equals("int32") || source.equals("int64") || source.equals("float");
+            case "float" -> source.equals("int") || source.equals("int16") || source.equals("int32");
+            case "int64" -> source.equals("int") || source.equals("int16") || source.equals("int32");
+            case "int", "int32" -> source.equals("int16");
+            default -> false;
+        };
 
-        return false;
     }
 
     /**
      * Trích xuất chữ ký kiểu của một hàm Stmt.Function.
      */
     private String getFunctionSignature(Stmt.Function function) {
-        StringBuilder sb = new StringBuilder("func(");
-        for (int i = 0; i < function.parameters.size(); i++) {
+        var sb = new StringBuilder("func(");
+        for (var i = 0; i < function.parameters.size(); i++) {
             sb.append(normalizeType(function.parameters.get(i).type.lexeme()));
             if (i < function.parameters.size() - 1) sb.append(", ");
         }
@@ -388,17 +395,22 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
      */
     private List<String> getParameterTypes(String signature) {
         List<String> types = new ArrayList<>();
-        int startParen = signature.indexOf('(');
-        int endParen = signature.indexOf(')');
+        var startParen = signature.indexOf('(');
+        var endParen = signature.indexOf(')');
         if (startParen == -1 || endParen == -1) return types;
-        
-        String paramsContent = signature.substring(startParen + 1, endParen).trim();
+
+        var paramsContent = signature.substring(startParen + 1, endParen).trim();
         if (paramsContent.isEmpty()) return types;
-        
-        int depth = 0;
-        int start = 0;
-        for (int i = 0; i < paramsContent.length(); i++) {
-            char c = paramsContent.charAt(i);
+
+        var depth = 0;
+        var start = 0;
+        handleParams(types, paramsContent, depth, start);
+        return types;
+    }
+
+    private void handleParams(List<String> types, String paramsContent, int depth, int start) {
+        for (var i = 0; i < paramsContent.length(); i++) {
+            var c = paramsContent.charAt(i);
             if (c == '<' || c == '(') depth++;
             else if (c == '>' || c == ')') depth--;
             else if (c == ',' && depth == 0) {
@@ -407,14 +419,13 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
             }
         }
         types.add(paramsContent.substring(start).trim());
-        return types;
     }
 
     /**
      * Trích xuất kiểu trả về từ chuỗi chữ ký hàm.
      */
     private String getReturnType(String signature) {
-        int arrow = signature.indexOf("->");
+        var arrow = signature.indexOf("->");
         if (arrow == -1) return "void";
         return signature.substring(arrow + 2).trim();
     }
@@ -428,25 +439,16 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
             types.add(tupleStr);
             return types;
         }
-        String content = tupleStr.substring(1, tupleStr.length() - 1).trim();
+        var content = tupleStr.substring(1, tupleStr.length() - 1).trim();
         if (content.isEmpty()) return types;
 
-        int depth = 0;
-        int start = 0;
+        var depth = 0;
+        var start = 0;
         List<String> parts = new ArrayList<>();
-        for (int i = 0; i < content.length(); i++) {
-            char c = content.charAt(i);
-            if (c == '<' || c == '(') depth++;
-            else if (c == '>' || c == ')') depth--;
-            else if (c == ',' && depth == 0) {
-                parts.add(content.substring(start, i).trim());
-                start = i + 1;
-            }
-        }
-        parts.add(content.substring(start).trim());
+        handleParams(parts, content, depth, start);
 
-        for (String part : parts) {
-            int lastSpace = part.lastIndexOf(' ');
+        for (var part : parts) {
+            var lastSpace = part.lastIndexOf(' ');
             if (lastSpace != -1) {
                 types.add(part.substring(0, lastSpace).trim());
             } else {
@@ -458,33 +460,20 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
 
     /**
      * Trích xuất các tên biến riêng lẻ từ biểu thức giải cấu trúc Tuple (ví dụ: "(a, b)").
-     * 
+     *
      * @param parent Token chứa chuỗi giải cấu trúc dạng "(a, b)"
      * @return Danh sách các Token định danh riêng lẻ của từng biến
      */
     private List<Token> extractDestructuredNames(Token parent) {
-        List<Token> result = new ArrayList<>();
-        String lexeme = parent.lexeme();
-        if (lexeme.startsWith("(") && lexeme.endsWith(")")) {
-            String content = lexeme.substring(1, lexeme.length() - 1);
-            String[] parts = content.split(",");
-            for (String part : parts) {
-                String nameStr = part.trim();
-                if (!nameStr.isEmpty()) {
-                    result.add(new Token(TokenType.IDENTIFIER, nameStr));
-                }
-            }
-        }
-        return result;
+        return getTokens(parent);
     }
 
     /**
      * Phân tích điều kiện If để lấy biến đang được so sánh khác null.
      */
     private String getNonNullCheckedVariable(Expr expr) {
-        if (expr instanceof Expr.Binary) {
-            Expr.Binary binary = (Expr.Binary) expr;
-            String op = binary.operator.lexeme();
+        if (expr instanceof Expr.Binary binary) {
+            var op = binary.operator.lexeme();
             if (op.equals("!=") || op.equals("khác") || op.equals("is_not")) {
                 if (binary.left instanceof Expr.Variable && isNullLiteral(binary.right)) {
                     return ((Expr.Variable) binary.left).name.lexeme();
@@ -518,7 +507,7 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
     @Override
     public Void visitBlockStmt(Stmt.Block stmt) {
         beginScope();
-        for (Stmt s : stmt.statements) {
+        for (var s : stmt.statements) {
             resolve(s);
         }
         endScope();
@@ -533,33 +522,33 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitFunctionStmt(Stmt.Function stmt) {
-        String sig = getFunctionSignature(stmt);
+        var sig = getFunctionSignature(stmt);
         define(stmt.name.lexeme(), sig);
-        
-        String previousReturnType = currentReturnType;
+
+        var previousReturnType = currentReturnType;
         currentReturnType = normalizeType(stmt.returnType != null ? stmt.returnType.lexeme() : "void");
-        
+
         beginScope();
         for (Stmt.Parameter param : stmt.parameters) {
             define(param.name.lexeme(), param.type.lexeme());
         }
-        for (Stmt bodyStmt : stmt.body) {
+        for (var bodyStmt : stmt.body) {
             resolve(bodyStmt);
         }
         endScope();
-        
+
         currentReturnType = previousReturnType;
         return null;
     }
 
     @Override
     public Void visitIfStmt(Stmt.If stmt) {
-        String condType = resolve(stmt.condition);
+        var condType = resolve(stmt.condition);
         if (!isCompatible("boolean", condType)) {
             error(getConditionToken(stmt.condition), "Điều kiện của câu lệnh 'nếu' phải là kiểu logic (boolean).");
         }
 
-        String nonNullVar = getNonNullCheckedVariable(stmt.condition);
+        var nonNullVar = getNonNullCheckedVariable(stmt.condition);
         String originalType = null;
         if (nonNullVar != null) {
             originalType = getVariableType(nonNullVar);
@@ -589,7 +578,7 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
                 error(stmt.name, "Khai báo giải cấu trúc bắt buộc phải được gán giá trị khởi tạo.");
                 return null;
             }
-            String initType = resolve(stmt.initializer);
+            var initType = resolve(stmt.initializer);
             if (!initType.startsWith("(") || !initType.endsWith(")")) {
                 error(stmt.name, "Biểu thức khởi tạo cho khai báo giải cấu trúc phải là kiểu Tuple, nhận được kiểu '" + initType + "'.");
                 return null;
@@ -600,10 +589,10 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
                 error(stmt.name, "Số lượng biến giải cấu trúc (" + names.size() + ") không khớp với số lượng phần tử trong Tuple (" + innerTypes.size() + ").");
                 return null;
             }
-            for (int i = 0; i < names.size(); i++) {
-                Token varName = names.get(i);
-                String varType = innerTypes.get(i);
-                
+            for (var i = 0; i < names.size(); i++) {
+                var varName = names.get(i);
+                var varType = innerTypes.get(i);
+
                 // Nếu tên biến kết thúc bằng dấu '?', và kiểu tự suy luận không nullable, biến nó thành nullable
                 if (varName.lexeme().endsWith("?") && !varType.endsWith("?")) {
                     varType = varType + "?";
@@ -613,12 +602,12 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
             return null;
         }
 
-        String initType = "void";
+        var initType = "void";
         if (stmt.initializer != null) {
             initType = resolve(stmt.initializer);
         }
 
-        String declaredType = null;
+        String declaredType;
         if (stmt.type != null) {
             declaredType = normalizeType(stmt.type.lexeme());
             if (stmt.initializer != null && !isCompatible(declaredType, initType)) {
@@ -649,11 +638,11 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitReturnStmt(Stmt.Return stmt) {
-        String valType = "void";
+        var valType = "void";
         if (stmt.value != null) {
             valType = resolve(stmt.value);
         }
-        
+
         if (currentReturnType == null) {
             error(stmt.keyword, "Không thể sử dụng câu lệnh 'trả_về' ở ngoài thân hàm.");
             return null;
@@ -667,7 +656,7 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitWhileStmt(Stmt.While stmt) {
-        String condType = resolve(stmt.condition);
+        var condType = resolve(stmt.condition);
         if (!isCompatible("boolean", condType)) {
             error(getConditionToken(stmt.condition), "Điều kiện vòng lặp 'lặp' phải là kiểu logic (boolean).");
         }
@@ -678,8 +667,8 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
     @Override
     public Void visitForStmt(Stmt.For stmt) {
         if (stmt.isForEach) {
-            String colType = resolve(stmt.end); // Kiểu của collection
-            String itemType = "any";
+            var colType = resolve(stmt.end); // Kiểu của collection
+            var itemType = "any";
             if (colType.startsWith("DanhSách<") && colType.endsWith(">")) {
                 itemType = colType.substring(9, colType.length() - 1);
             } else if (colType.startsWith("List<") && colType.endsWith(">")) {
@@ -692,8 +681,8 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
             resolve(stmt.body);
             endScope();
         } else {
-            String startType = resolve(stmt.start);
-            String endType = resolve(stmt.end);
+            var startType = resolve(stmt.start);
+            var endType = resolve(stmt.end);
             if (!isCompatible("int", startType) || !isCompatible("int", endType)) {
                 error(stmt.name, "Khoảng lặp duyệt số yêu cầu các giới hạn phải là kiểu số nguyên (int).");
             }
@@ -726,16 +715,16 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
      */
     @Override
     public Void visitSwitchStmt(Stmt.Switch stmt) {
-        String valType = resolve(stmt.value);
+        var valType = resolve(stmt.value);
         for (Stmt.SwitchCase sc : stmt.cases) {
-            for (Expr pattern : sc.patterns) {
-                String patType = resolve(pattern);
+            for (var pattern : sc.patterns) {
+                var patType = resolve(pattern);
                 if (isDefaultPattern(pattern, valType)) {
                     continue;
                 }
                 if (!isCompatible(valType, patType)) {
                     error(stmt.value instanceof Expr.Variable ? ((Expr.Variable) stmt.value).name : new Token(nova.lexer.TokenType.IDENTIFIER, "switch"),
-                        "Kiểu của mẫu trường hợp '" + patType + "' không khớp với biểu thức switch '" + valType + "'.");
+                            "Kiểu của mẫu trường hợp '" + patType + "' không khớp với biểu thức switch '" + valType + "'.");
                 }
             }
             resolve(sc.body);
@@ -746,23 +735,19 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
     /**
      * Kiểm tra xem một biểu thức mẫu trong câu lệnh switch có phải là mẫu mặc định (wildcard) hay không.
      * Mẫu mặc định bao gồm mẫu tự do '_' hoặc mẫu logic 'sai' / 'false' khi biểu thức switch không phải kiểu logic.
-     * 
+     *
      * @param pattern Biểu thức mẫu cần kiểm tra
      * @param valType Kiểu dữ liệu của biểu thức switch
      * @return {@code true} nếu là mẫu mặc định, ngược lại {@code false}
      */
     private boolean isDefaultPattern(Expr pattern, String valType) {
-        if (pattern instanceof Expr.Variable) {
-            Expr.Variable varExpr = (Expr.Variable) pattern;
+        if (pattern instanceof Expr.Variable varExpr) {
             if (varExpr.name.lexeme().equals("_")) {
                 return true;
             }
         }
-        if (pattern instanceof Expr.Literal) {
-            Expr.Literal litExpr = (Expr.Literal) pattern;
-            if (Boolean.FALSE.equals(litExpr.value) && !valType.equals("boolean")) {
-                return true;
-            }
+        if (pattern instanceof Expr.Literal litExpr) {
+            return Boolean.FALSE.equals(litExpr.value) && !valType.equals("boolean");
         }
         return false;
     }
@@ -771,12 +756,12 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
 
     @Override
     public String visitAssignExpr(Expr.Assign expr) {
-        String varType = getVariableType(expr.name.lexeme(), expr);
+        var varType = getVariableType(expr.name.lexeme(), expr);
         if (varType == null) {
             error(expr.name, "Biến '" + expr.name.lexeme() + "' chưa được khai báo.");
             return "any";
         }
-        String valType = resolve(expr.value);
+        var valType = resolve(expr.value);
         if (!isCompatible(varType, valType)) {
             error(expr.name, "Không thể gán giá trị kiểu '" + valType + "' cho biến '" + expr.name.lexeme() + "' kiểu '" + varType + "'.");
         }
@@ -788,9 +773,9 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
 
     @Override
     public String visitBinaryExpr(Expr.Binary expr) {
-        String leftType = resolve(expr.left);
-        String rightType = resolve(expr.right);
-        String op = expr.operator.lexeme();
+        var leftType = resolve(expr.left);
+        var rightType = resolve(expr.right);
+        var op = expr.operator.lexeme();
 
         // 1. Phép nối chuỗi
         if (op.equals("+") && (leftType.equals("string") || rightType.equals("string"))) {
@@ -798,35 +783,38 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
         }
 
         // 2. Phép toán số học cơ bản
-        if (op.equals("+") || op.equals("-") || op.equals("*") || op.equals("/") || op.equals("%")) {
-            boolean leftNum = isCompatible("double", leftType);
-            boolean rightNum = isCompatible("double", rightType);
-            if (!leftNum || !rightNum) {
-                error(expr.operator, "Phép toán số học yêu cầu hai toán hạng đều phải là kiểu số. Nhận được kiểu '" + leftType + "' và '" + rightType + "'.");
-                return "any";
+        switch (op) {
+            case "+", "-", "*", "/", "%" -> {
+                boolean leftNum = isCompatible("double", leftType);
+                boolean rightNum = isCompatible("double", rightType);
+                if (!leftNum || !rightNum) {
+                    error(expr.operator, "Phép toán số học yêu cầu hai toán hạng đều phải là kiểu số. Nhận được kiểu '" + leftType + "' và '" + rightType + "'.");
+                    return "any";
+                }
+                if (leftType.equals("double") || rightType.equals("double")) return "double";
+                if (leftType.equals("float") || rightType.equals("float")) return "float";
+                if (leftType.equals("int64") || rightType.equals("int64")) return "int64";
+                return "int";
             }
-            if (leftType.equals("double") || rightType.equals("double")) return "double";
-            if (leftType.equals("float") || rightType.equals("float")) return "float";
-            if (leftType.equals("int64") || rightType.equals("int64")) return "int64";
-            return "int";
-        }
 
-        // 3. Toán tử so sánh logic số học
-        if (op.equals("<") || op.equals(">") || op.equals("<=") || op.equals(">=")) {
-            boolean leftNum = isCompatible("double", leftType) || leftType.equals("char");
-            boolean rightNum = isCompatible("double", rightType) || rightType.equals("char");
-            if (!leftNum || !rightNum) {
-                error(expr.operator, "Toán tử so sánh '" + op + "' yêu cầu các toán hạng là kiểu số hoặc ký tự.");
+            // 3. Toán tử so sánh logic số học
+            case "<", ">", "<=", ">=" -> {
+                boolean leftNum = isCompatible("double", leftType) || leftType.equals("char");
+                boolean rightNum = isCompatible("double", rightType) || rightType.equals("char");
+                if (!leftNum || !rightNum) {
+                    error(expr.operator, "Toán tử so sánh '" + op + "' yêu cầu các toán hạng là kiểu số hoặc ký tự.");
+                }
+                return "boolean";
             }
-            return "boolean";
-        }
 
-        // 4. Toán tử so sánh đẳng trị
-        if (op.equals("==") || op.equals("!=") || op.equals("khác") || op.equals("is_not")) {
-            if (!isCompatible(leftType, rightType) && !isCompatible(rightType, leftType)) {
-                error(expr.operator, "Không thể so sánh đẳng trị giữa hai kiểu không tương thích: '" + leftType + "' và '" + rightType + "'.");
+
+            // 4. Toán tử so sánh đẳng trị
+            case "==", "!=", "khác", "is_not" -> {
+                if (!isCompatible(leftType, rightType) && !isCompatible(rightType, leftType)) {
+                    error(expr.operator, "Không thể so sánh đẳng trị giữa hai kiểu không tương thích: '" + leftType + "' và '" + rightType + "'.");
+                }
+                return "boolean";
             }
-            return "boolean";
         }
 
         error(expr.operator, "Không hỗ trợ toán tử hai ngôi '" + op + "'.");
@@ -841,21 +829,23 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
     @Override
     public String visitLiteralExpr(Expr.Literal expr) {
         Object val = expr.value;
-        if (val == null) return "null";
-        if (val instanceof Integer) return "int";
-        if (val instanceof Double) return "double";
-        if (val instanceof Float) return "float";
-        if (val instanceof Long) return "int64";
-        if (val instanceof Boolean) return "boolean";
-        if (val instanceof Character) return "char";
-        if (val instanceof String) return "string";
-        return "any";
+        return switch (val) {
+            case null -> "null";
+            case Integer _ -> "int";
+            case Double _ -> "double";
+            case Float _ -> "float";
+            case Long _ -> "int64";
+            case Boolean _ -> "boolean";
+            case Character _ -> "char";
+            case String _ -> "string";
+            default -> "any";
+        };
     }
 
     @Override
     public String visitLogicalExpr(Expr.Logical expr) {
-        String leftType = resolve(expr.left);
-        String rightType = resolve(expr.right);
+        var leftType = resolve(expr.left);
+        var rightType = resolve(expr.right);
         if (!isCompatible("boolean", leftType) || !isCompatible("boolean", rightType)) {
             error(expr.operator, "Các toán tử logic 'và' / 'hoặc' yêu cầu các toán hạng phải là kiểu logic (boolean).");
         }
@@ -866,7 +856,7 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
      * Thực hiện kiểm tra kiểu cho biểu thức biến (Variable Expression).
      * Trả về kiểu dữ liệu của biến tương ứng nếu đã được khai báo, hoặc báo lỗi nếu biến chưa khai báo.
      * Biến đặc biệt đại diện cho wildcard (mẫu trùng khớp mọi giá trị '_') được bỏ qua kiểm tra khai báo và trả về kiểu 'any'.
-     * 
+     *
      * @param expr Biểu thức biến cần kiểm tra kiểu
      * @return Kiểu dữ liệu tương ứng của biến hoặc 'any' nếu lỗi hoặc là biến wildcard
      */
@@ -875,7 +865,7 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
         if (expr.name.lexeme().equals("_")) {
             return "any";
         }
-        String varType = getVariableType(expr.name.lexeme(), expr);
+        var varType = getVariableType(expr.name.lexeme(), expr);
         if (varType == null) {
             error(expr.name, "Biến '" + expr.name.lexeme() + "' chưa được khai báo.");
             return "any";
@@ -889,20 +879,20 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
      * và tính tương thích kiểu dữ liệu giữa các đối số thực tế với kiểu tham số trong chữ ký hàm.
      * Đối với các hàm đặc biệt chấp nhận kiểu 'any', tất cả các đối số vẫn được duyệt qua
      * và phân tích kiểu để phát hiện lỗi bên trong chúng.
-     * 
+     *
      * @param expr Biểu thức gọi hàm cần kiểm tra
      * @return Kiểu dữ liệu trả về của hàm được gọi, hoặc "any" nếu có lỗi xảy ra
      */
     @Override
     public String visitCallExpr(Expr.Call expr) {
-        String calleeType = resolve(expr.callee);
+        var calleeType = resolve(expr.callee);
         if (calleeType.startsWith("func(")) {
             List<String> paramTypes = getParameterTypes(calleeType);
-            String returnType = getReturnType(calleeType);
-            
+            var returnType = getReturnType(calleeType);
+
             // Nếu là hàm nhận any làm đối số, bỏ qua kiểm tra số lượng và kiểu nhưng vẫn phân tích các đối số
-            if (paramTypes.size() == 1 && paramTypes.get(0).equals("any")) {
-                for (Expr argument : expr.arguments) {
+            if (paramTypes.size() == 1 && paramTypes.getFirst().equals("any")) {
+                for (var argument : expr.arguments) {
                     resolve(argument);
                 }
                 return returnType;
@@ -913,8 +903,8 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
                 return returnType;
             }
 
-            for (int i = 0; i < expr.arguments.size(); i++) {
-                String argType = resolve(expr.arguments.get(i));
+            for (var i = 0; i < expr.arguments.size(); i++) {
+                var argType = resolve(expr.arguments.get(i));
                 if (!isCompatible(paramTypes.get(i), argType)) {
                     error(expr.paren, "Tham số thứ " + (i + 1) + " không khớp kiểu. Yêu cầu kiểu '" + paramTypes.get(i) + "' nhưng nhận kiểu '" + argType + "'.");
                 }
@@ -928,8 +918,8 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
 
     @Override
     public String visitUnaryExpr(Expr.Unary expr) {
-        String rightType = resolve(expr.right);
-        String op = expr.operator.lexeme();
+        var rightType = resolve(expr.right);
+        var op = expr.operator.lexeme();
         if (op.equals("-")) {
             if (!isCompatible("double", rightType)) {
                 error(expr.operator, "Toán tử đổi dấu '-' yêu cầu toán hạng phải là kiểu số.");
@@ -947,15 +937,15 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
 
     @Override
     public String visitGetExpr(Expr.Get expr) {
-        String objType = resolve(expr.object);
-        
+        var objType = resolve(expr.object);
+
         // Chặn gọi thuộc tính trên kiểu nullable
         if (objType.endsWith("?")) {
             error(expr.name, "Không thể gọi thuộc tính hoặc phương thức '" + expr.name.lexeme() + "' trên đối tượng nullable '" + objType + "' khi chưa kiểm tra khác null.");
             return "any";
         }
 
-        String propName = expr.name.lexeme();
+        var propName = expr.name.lexeme();
         if (objType.equals("string")) {
             if (propName.equals("length")) {
                 return "func() -> int";
@@ -967,7 +957,7 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
 
         if (propName.equals("to_string")) {
             if (objType.equals("int") || objType.equals("int16") || objType.equals("int32") || objType.equals("int64") ||
-                objType.equals("double") || objType.equals("float") || objType.equals("char") || objType.equals("boolean")) {
+                    objType.equals("double") || objType.equals("float") || objType.equals("char") || objType.equals("boolean")) {
                 return "func() -> string";
             }
         }
@@ -986,29 +976,26 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
      */
     @Override
     public String visitStmtExpr(Expr.StmtExpr expr) {
-        Stmt stmt = expr.statement;
-        if (stmt instanceof Stmt.If) {
-            Stmt.If ifStmt = (Stmt.If) stmt;
+        var stmt = expr.statement;
+        if (stmt instanceof Stmt.If ifStmt) {
             resolve(ifStmt);
-            String thenType = getStatementExpressionType(ifStmt.thenBranch);
-            String elseType = ifStmt.elseBranch != null ? getStatementExpressionType(ifStmt.elseBranch) : "void";
+            var thenType = getStatementExpressionType(ifStmt.thenBranch);
+            var elseType = ifStmt.elseBranch != null ? getStatementExpressionType(ifStmt.elseBranch) : "void";
             if (!isCompatible(thenType, elseType) && !isCompatible(elseType, thenType)) {
                 error(getConditionToken(ifStmt.condition), "Kiểu dữ liệu trả về của hai nhánh trong biểu thức 'nếu' không tương thích ('" + thenType + "' và '" + elseType + "').");
             }
             return thenType;
         }
-        if (stmt instanceof Stmt.Block) {
-            Stmt.Block block = (Stmt.Block) stmt;
+        if (stmt instanceof Stmt.Block block) {
             resolve(block);
             if (block.statements.isEmpty()) return "void";
-            Stmt last = block.statements.get(block.statements.size() - 1);
+            var last = block.statements.getLast();
             return getStatementExpressionType(last);
         }
-        if (stmt instanceof Stmt.Switch) {
-            Stmt.Switch sw = (Stmt.Switch) stmt;
+        if (stmt instanceof Stmt.Switch sw) {
             resolve(sw);
             if (sw.cases.isEmpty()) return "void";
-            String firstType = getStatementExpressionType(sw.cases.get(0).body);
+            var firstType = getStatementExpressionType(sw.cases.getFirst().body);
             for (Stmt.SwitchCase sc : sw.cases) {
                 String scType = getStatementExpressionType(sc.body);
                 if (!isCompatible(firstType, scType) && !isCompatible(scType, firstType)) {
@@ -1028,13 +1015,11 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
         if (stmt instanceof Stmt.Expression) {
             return resolve(((Stmt.Expression) stmt).expression);
         }
-        if (stmt instanceof Stmt.Block) {
-            Stmt.Block block = (Stmt.Block) stmt;
+        if (stmt instanceof Stmt.Block block) {
             if (block.statements.isEmpty()) return "void";
-            return getStatementExpressionType(block.statements.get(block.statements.size() - 1));
+            return getStatementExpressionType(block.statements.getLast());
         }
-        if (stmt instanceof Stmt.If) {
-            Stmt.If ifStmt = (Stmt.If) stmt;
+        if (stmt instanceof Stmt.If ifStmt) {
             return getStatementExpressionType(ifStmt.thenBranch);
         }
         return "void";
@@ -1043,14 +1028,14 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
     /**
      * Thực hiện kiểm tra kiểu cho biểu thức Tuple.
      * Đánh giá kiểu dữ liệu của từng biểu thức thành phần và định dạng kết quả dưới dạng chuỗi kiểu Tuple.
-     * 
+     *
      * @param expr Biểu thức Tuple cần kiểm tra kiểu dữ liệu
      * @return Chuỗi kiểu dữ liệu của Tuple (ví dụ: "(int, string)")
      */
     @Override
     public String visitTupleExpr(Expr.Tuple expr) {
-        StringBuilder sb = new StringBuilder("(");
-        for (int i = 0; i < expr.expressions.size(); i++) {
+        var sb = new StringBuilder("(");
+        for (var i = 0; i < expr.expressions.size(); i++) {
             sb.append(resolve(expr.expressions.get(i)));
             if (i < expr.expressions.size() - 1) {
                 sb.append(", ");
@@ -1063,5 +1048,6 @@ public class TypeChecker implements Expr.Visitor<String>, Stmt.Visitor<Void> {
     /**
      * Ngoại lệ nội bộ dùng để ngắt luồng kiểm tra kiểu khi gặp lỗi nặng.
      */
-    private static class TypeException extends RuntimeException {}
+    private static class TypeException extends RuntimeException {
+    }
 }

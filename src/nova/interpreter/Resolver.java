@@ -2,13 +2,15 @@ package nova.interpreter;
 
 import nova.ast.Expr;
 import nova.ast.Stmt;
+import nova.interpreter.exception.SemanticError;
 import nova.lexer.Token;
-import nova.lexer.TokenType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+
+import static nova.interpreter.Interpreter.getTokens;
 
 /**
  * Lớp Resolver thực hiện phân tích tĩnh (Static Analysis) ngay sau khi có cây AST và trước khi chạy trình thông dịch.
@@ -93,15 +95,6 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     }
 
     /**
-     * Lấy danh sách các lỗi ngữ nghĩa đã thu thập.
-     * 
-     * @return Danh sách đối tượng {@link SemanticError}
-     */
-    public List<SemanticError> getErrors() {
-        return errors;
-    }
-
-    /**
      * Báo lỗi ngữ nghĩa mới tại một token chỉ định.
      * 
      * @param token Token gây lỗi
@@ -117,7 +110,9 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
      * @param stmt Câu lệnh cần phân tích
      */
     private void resolve(Stmt stmt) {
-        stmt.accept(this);
+        if (stmt != null) {
+            stmt.accept(this);
+        }
     }
 
     /**
@@ -126,7 +121,9 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
      * @param expr Biểu thức cần phân tích
      */
     private void resolve(Expr expr) {
-        expr.accept(this);
+        if (expr != null) {
+            expr.accept(this);
+        }
     }
 
     /**
@@ -144,32 +141,13 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     }
 
     /**
-     * Thực hiện khai báo một biến trong tầm vực hiện tại hoặc toàn cục nhưng chưa đánh dấu là sẵn sàng sử dụng (isReady = false).
-     * Báo lỗi nếu biến bị khai báo trùng lặp trong cùng một tầm vực cục bộ.
-     * 
-     * @param name Token tên biến cần khai báo
-     * @param keyword Token từ khóa khai báo hoặc kiểu dữ liệu của biến
-     */
-    /**
      * Trích xuất các tên biến riêng lẻ từ biểu thức giải cấu trúc Tuple (ví dụ: "(a, b)").
      * 
      * @param parent Token chứa chuỗi giải cấu trúc dạng "(a, b)"
      * @return Danh sách các Token định danh riêng lẻ của từng biến
      */
     private List<Token> extractDestructuredNames(Token parent) {
-        List<Token> result = new ArrayList<>();
-        String lexeme = parent.lexeme();
-        if (lexeme.startsWith("(") && lexeme.endsWith(")")) {
-            String content = lexeme.substring(1, lexeme.length() - 1);
-            String[] parts = content.split(",");
-            for (String part : parts) {
-                String nameStr = part.trim();
-                if (!nameStr.isEmpty()) {
-                    result.add(new Token(TokenType.IDENTIFIER, nameStr));
-                }
-            }
-        }
-        return result;
+        return getTokens(parent);
     }
 
     /**
@@ -181,7 +159,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     private void declare(Token name, Token keyword) {
         if (name.lexeme().startsWith("(") && name.lexeme().endsWith(")")) {
             List<Token> names = extractDestructuredNames(name);
-            for (Token n : names) {
+            for (var n : names) {
                 declareSingle(n, keyword);
             }
         } else {
@@ -217,7 +195,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     private void define(Token name) {
         if (name.lexeme().startsWith("(") && name.lexeme().endsWith(")")) {
             List<Token> names = extractDestructuredNames(name);
-            for (Token n : names) {
+            for (var n : names) {
                 defineSingle(n);
             }
         } else {
@@ -232,13 +210,13 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
      */
     private void defineSingle(Token name) {
         if (scopes.isEmpty()) {
-            VariableState state = globals.get(name.lexeme());
+            var state = globals.get(name.lexeme());
             if (state != null) {
                 state.isReady = true;
             }
             return;
         }
-        VariableState state = scopes.peek().get(name.lexeme());
+        var state = scopes.peek().get(name.lexeme());
         if (state != null) {
             state.isReady = true;
         }
@@ -252,7 +230,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
      * @param name Token tên biến
      */
     private void resolveLocal(Expr expr, Token name) {
-        for (int i = scopes.size() - 1; i >= 0; i--) {
+        for (var i = scopes.size() - 1; i >= 0; i--) {
             if (scopes.get(i).containsKey(name.lexeme())) {
                 interpreter.resolve(expr, scopes.size() - 1 - i);
                 return;
@@ -263,20 +241,19 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     /**
      * Giải quyết tầm vực cho một hàm (bao gồm tạo scope mới cho các tham số và phân tích thân hàm).
-     * 
+     *
      * @param function Hàm cần giải quyết
-     * @param type Loại hàm đang phân tích
      */
-    private void resolveFunction(Stmt.Function function, FunctionType type) {
-        FunctionType enclosingFunction = currentFunction;
-        currentFunction = type;
+    private void resolveFunction(Stmt.Function function) {
+        var enclosingFunction = currentFunction;
+        currentFunction = FunctionType.FUNCTION;
 
         beginScope();
         for (Stmt.Parameter param : function.parameters) {
             declare(param.name, param.type);
             define(param.name);
         }
-        for (Stmt stmt : function.body) {
+        for (var stmt : function.body) {
             resolve(stmt);
         }
         endScope();
@@ -292,7 +269,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
      */
     private boolean isMutable(Token keyword) {
         if (keyword == null) return false;
-        String lexeme = keyword.lexeme();
+        var lexeme = keyword.lexeme();
         return lexeme.equals("mut") || lexeme.equals("khả_biến");
     }
 
@@ -304,7 +281,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
      */
     private boolean isConst(Token keyword) {
         if (keyword == null) return false;
-        String lexeme = keyword.lexeme();
+        var lexeme = keyword.lexeme();
         return lexeme.equals("const") || lexeme.equals("hằng_số");
     }
 
@@ -315,7 +292,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
      * @return VariableState của biến nếu tìm thấy, ngược lại {@code null}
      */
     private VariableState lookupVariableState(Token name) {
-        for (int i = scopes.size() - 1; i >= 0; i--) {
+        for (var i = scopes.size() - 1; i >= 0; i--) {
             if (scopes.get(i).containsKey(name.lexeme())) {
                 return scopes.get(i).get(name.lexeme());
             }
@@ -343,7 +320,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     public Void visitFunctionStmt(Stmt.Function stmt) {
         declare(stmt.name, stmt.name);
         define(stmt.name);
-        resolveFunction(stmt, FunctionType.FUNCTION);
+        resolveFunction(stmt);
         return null;
     }
 
@@ -386,8 +363,8 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     @Override
     public Void visitWhileStmt(Stmt.While stmt) {
         resolve(stmt.condition);
-        
-        boolean wasInLoop = isInLoop;
+
+        var wasInLoop = isInLoop;
         isInLoop = true;
         resolve(stmt.body);
         isInLoop = wasInLoop;
@@ -408,7 +385,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         declare(stmt.name, stmt.name); // Biến lặp là biến bất biến cục bộ trong thân loop
         define(stmt.name);
 
-        boolean wasInLoop = isInLoop;
+        var wasInLoop = isInLoop;
         isInLoop = true;
         resolve(stmt.body);
         isInLoop = wasInLoop;
@@ -437,7 +414,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     public Void visitSwitchStmt(Stmt.Switch stmt) {
         resolve(stmt.value);
         for (Stmt.SwitchCase sc : stmt.cases) {
-            for (Expr pattern : sc.patterns) {
+            for (var pattern : sc.patterns) {
                 resolve(pattern);
             }
             resolve(sc.body);
@@ -453,7 +430,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         resolveLocal(expr, expr.name);
 
         // Kiểm tra tĩnh tính khả biến (Mutability)
-        VariableState state = lookupVariableState(expr.name);
+        var state = lookupVariableState(expr.name);
         if (state != null) {
             if (isConst(state.keyword)) {
                 error(expr.name, "Hằng số '" + expr.name.lexeme() + "' không thể bị thay đổi giá trị.");
@@ -492,7 +469,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     @Override
     public Void visitVariableExpr(Expr.Variable expr) {
         if (!scopes.isEmpty()) {
-            VariableState state = scopes.peek().get(expr.name.lexeme());
+            var state = scopes.peek().get(expr.name.lexeme());
             if (state != null && !state.isReady) {
                 error(expr.name, "Không thể đọc biến cục bộ '" + expr.name.lexeme() + "' trong biểu thức khởi tạo của chính nó.");
             }
@@ -505,7 +482,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     @Override
     public Void visitCallExpr(Expr.Call expr) {
         resolve(expr.callee);
-        for (Expr argument : expr.arguments) {
+        for (var argument : expr.arguments) {
             resolve(argument);
         }
         return null;
@@ -537,7 +514,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
      */
     @Override
     public Void visitTupleExpr(Expr.Tuple expr) {
-        for (Expr expression : expr.expressions) {
+        for (var expression : expr.expressions) {
             resolve(expression);
         }
         return null;

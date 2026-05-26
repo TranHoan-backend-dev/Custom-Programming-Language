@@ -1,5 +1,7 @@
 package nova.interpreter;
 
+import nova.interpreter.exception.RuntimeError;
+import nova.interpreter.exception.SemanticError;
 import nova.lexer.Lexer;
 import nova.lexer.Token;
 import nova.lexer.TokenType;

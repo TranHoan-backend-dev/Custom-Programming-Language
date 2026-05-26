@@ -1,4 +1,4 @@
-package nova.interpreter;
+package nova.interpreter.exception;
 
 import nova.lexer.Token;
 

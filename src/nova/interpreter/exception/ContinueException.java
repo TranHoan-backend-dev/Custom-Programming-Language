@@ -1,4 +1,4 @@
-package nova.interpreter;
+package nova.interpreter.exception;
 
 /**
  * Ngoại lệ điều khiển dùng để lập tức bỏ qua phần thân còn lại của vòng lặp và tiến tới lần lặp kế tiếp

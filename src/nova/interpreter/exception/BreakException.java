@@ -1,4 +1,4 @@
-package nova.interpreter;
+package nova.interpreter.exception;
 
 /**
  * Ngoại lệ điều khiển dùng để lập tức ngắt vòng lặp hiện tại khi gặp câu lệnh 'dừng' / 'break'.
