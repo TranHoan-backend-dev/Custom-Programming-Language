@@ -42,8 +42,8 @@ public class Main {
                 default:
                     // Chạy file trực tiếp
                     if (args.length > 1) {
-                        System.out.println("Cách dùng: java Main [đường_dẫn_tới_file.nova]");
-                        System.out.println("Gõ 'nova help' để xem thêm.");
+                        System.out.println("Usage: java Main [path_to_file.nova]");
+                        System.out.println("Type 'nova help' to see more.");
                         System.exit(64);
                     } else {
                         RunCommand runCmd = new RunCommand();
@@ -53,9 +53,9 @@ public class Main {
             }
         }
 
-        System.out.println("Vui lòng cung cấp một lệnh hoặc đường dẫn tới file .nova để thực thi.");
-        System.out.println("Ví dụ: java Main hello.nova");
-        System.out.println("Gõ 'nova help' để xem các lệnh khả dụng.");
+        System.out.println("Please provide a command or a path to a .nova file to execute.");
+        System.out.println("Example: java Main hello.nova");
+        System.out.println("Type 'nova help' to see available commands.");
     }
 
     private static void printVersion() {

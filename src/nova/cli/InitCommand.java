@@ -96,6 +96,6 @@ public class InitCommand implements CliCommand {
         }
 
         System.out.println("Successfully initialized project '" + projectName + "'!");
-        System.out.println("You can run it with: nova run (if PATH is configured) or .\\nova.bat run");
+        System.out.println("You can run it with: nova run");
     }
 }

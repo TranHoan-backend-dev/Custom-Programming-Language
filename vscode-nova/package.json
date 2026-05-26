@@ -3,7 +3,7 @@
   "displayName": "Nova Language Support",
   "description": "Syntax highlighting and snippets for Nova programming language.",
   "version": "1.0.0",
-  "publisher": "hoan",
+  "publisher": "TranHoan",
   "engines": {
     "vscode": "^1.75.0"
   },
