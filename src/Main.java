@@ -63,13 +63,13 @@ public class Main {
     }
 
     private static void printHelp() {
-        System.out.println("Nova Language CLI - Cách dùng:");
-        System.out.println("  nova init       : Khởi tạo một dự án Nova mới (tạo cấu trúc thư mục và file cơ bản).");
-        System.out.println("  nova run        : Chạy toàn bộ dự án từ file src/main.nova.");
-        System.out.println("  nova check      : Kiểm tra lỗi cú pháp và định danh (không thực thi code).");
-        System.out.println("  nova test       : Chạy các file kiểm thử (kết thúc bằng _test.nova) trong thư mục src/.");
-        System.out.println("  nova version    : Hiển thị phiên bản Nova hiện tại.");
-        System.out.println("  nova help       : Hiển thị hướng dẫn này.");
-        System.out.println("  nova <file>     : Chạy một file .nova độc lập.");
+        System.out.println("Nova Language CLI - How to use:");
+        System.out.println("  nova init       : Initialize new Nova project (creating structure and basic files).");
+        System.out.println("  nova run        : Run project from src/main.nova.");
+        System.out.println("  nova check      : Check syntax and identifier errors (without executing code).");
+        System.out.println("  nova test       : Run test files (ending with _test.nova) in src/ directory.");
+        System.out.println("  nova version    : Display the current Nova version.");
+        System.out.println("  nova help       : Show this help guide.");
+        System.out.println("  nova <file>     : Run an independent .nova file.");
     }
 }

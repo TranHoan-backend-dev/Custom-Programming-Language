@@ -3,11 +3,11 @@ name: CI/CD Pipeline
 # Định nghĩa khi nào CI sẽ tự động chạy
 on:
   push:
-    branches: [ "main" ] # Chạy khi có code mới đẩy lên nhánh main
+    branches: ["main"] # Chạy khi có code mới đẩy lên nhánh main
     tags:
-      - 'v*' # Chạy khi có một tag mới (ví dụ: v0.0.3)
+      - "v*" # Chạy khi có một tag mới (ví dụ: v0.0.3)
   pull_request:
-    branches: [ "main" ] # Chạy khi có Pull Request gộp vào nhánh main
+    branches: ["main"] # Chạy khi có Pull Request gộp vào nhánh main
 
 jobs:
   # ==========================================
@@ -17,33 +17,33 @@ jobs:
     runs-on: ubuntu-latest # Chạy trên máy ảo Linux Ubuntu mới nhất
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4 # Tải source code của bạn từ GitHub xuống máy ảo
+      - name: Checkout repository
+        uses: actions/checkout@v4 # Tải source code của bạn từ GitHub xuống máy ảo
 
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4 # Cài đặt môi trường Java 21
-      with:
-        java-version: '21'
-        distribution: 'temurin'
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4 # Cài đặt môi trường Java 21
+        with:
+          java-version: "21"
+          distribution: "temurin"
 
-    - name: Compile Source and Test code
-      run: |
-        # Tạo thư mục chứa code đã biên dịch
-        mkdir -p out/production/untitled
-        # Tìm tất cả file .java trong src và test để biên dịch cùng lúc
-        find src -name "*.java" > sources.txt
-        find test -name "*.java" >> sources.txt
-        # Chạy trình biên dịch javac
-        javac --enable-preview --release 21 -encoding UTF-8 -d out/production/untitled @sources.txt
+      - name: Compile Source and Test code
+        run: |
+          # Tạo thư mục chứa code đã biên dịch
+          mkdir -p out/production/untitled
+          # Tìm tất cả file .java trong src và test để biên dịch cùng lúc
+          find src -name "*.java" > sources.txt
+          find test -name "*.java" >> sources.txt
+          # Chạy trình biên dịch javac
+          javac --enable-preview --release 21 -encoding UTF-8 -d out/production/untitled @sources.txt
 
-    - name: Run ParserTest
-      run: java --enable-preview -cp out/production/untitled nova.parser.ParserTest # Chạy test cho bộ Phân tích cú pháp
+      - name: Run ParserTest
+        run: java --enable-preview -cp out/production/untitled nova.parser.ParserTest # Chạy test cho bộ Phân tích cú pháp
 
-    - name: Run InterpreterTest
-      run: java --enable-preview -cp out/production/untitled nova.interpreter.InterpreterTest # Chạy test cho bộ Thông dịch
+      - name: Run InterpreterTest
+        run: java --enable-preview -cp out/production/untitled nova.interpreter.InterpreterTest # Chạy test cho bộ Thông dịch
 
-    - name: Run NovaReplTest
-      run: java --enable-preview -cp out/production/untitled nova.repl.NovaReplTest # Chạy test cho môi trường REPL
+      - name: Run NovaReplTest
+        run: java --enable-preview -cp out/production/untitled nova.repl.NovaReplTest # Chạy test cho môi trường REPL
 
   # ==========================================
   # JOB 2: ĐÓNG GÓI VS CODE EXTENSION
@@ -51,26 +51,26 @@ jobs:
   build-vscode-extension:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4 # Cài đặt Node.js để dùng công cụ đóng gói VS Code
-      with:
-        node-version: '20'
-        
-    - name: Install vsce
-      run: npm install -g @vscode/vsce # Cài đặt vsce (VS Code Extension Manager)
-      
-    - name: Package Extension
-      run: |
-        cd vscode-nova
-        vsce package -o ../nova-lang.vsix # Đóng gói thư mục thành file .vsix
-        
-    - name: Upload VSCode Extension
-      uses: actions/upload-artifact@v4 # Tải file .vsix lên GitHub Artifacts để tải về
-      with:
-        name: nova-lang-vsix
-        path: nova-lang.vsix
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4 # Cài đặt Node.js để dùng công cụ đóng gói VS Code
+        with:
+          node-version: "20"
+
+      - name: Install vsce
+        run: npm install -g @vscode/vsce # Cài đặt vsce (VS Code Extension Manager)
+
+      - name: Package Extension
+        run: |
+          cd vscode-nova
+          vsce package -o ../nova-lang.vsix # Đóng gói thư mục thành file .vsix
+
+      - name: Upload VSCode Extension
+        uses: actions/upload-artifact@v4 # Tải file .vsix lên GitHub Artifacts để tải về
+        with:
+          name: nova-lang-vsix
+          path: nova-lang.vsix
 
   # ==========================================
   # JOB 3: TẠO FILE CÀI ĐẶT WINDOWS (.EXE)
@@ -78,45 +78,45 @@ jobs:
   build-windows-installer:
     runs-on: windows-latest # Chạy trên máy ảo Windows để dùng được Inno Setup
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: '21'
-        distribution: 'temurin'
-        
-    - name: Compile and package nova.jar
-      shell: cmd
-      run: |
-        mkdir out\production\nova
-        dir /s /b src\*.java > sources.txt
-        :: Biên dịch source code
-        javac --enable-preview --release 21 -encoding UTF-8 -d out\production\nova @sources.txt
-        :: Gói tất cả file .class thành 1 file nova.jar duy nhất, chỉ định file chạy chính là Main
-        jar cfe out\production\nova.jar Main -C out\production\nova .
+      - uses: actions/checkout@v4
 
-    - name: Download bundled JRE 21
-      run: |
-        # Tải file nén chứa bản Java thu gọn (JRE 21) cho Windows
-        Invoke-WebRequest -Uri "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.6%2B7/OpenJDK21U-jre_x64_windows_hotspot_21.0.6_7.zip" -OutFile jre.zip
-        # Giải nén
-        Expand-Archive -Path jre.zip -DestinationPath jre_extracted
-        # Đổi tên thư mục thành "jre" và di chuyển ra ngoài để Inno Setup nhặt vào
-        Rename-Item -Path "jre_extracted\jdk-21.0.6+7-jre" -NewName "jre"
-        Move-Item -Path "jre_extracted\jre" -Destination ".\jre"
-        
-    - name: Compile Inno Setup Script
-      shell: cmd
-      run: |
-        :: Gọi trình biên dịch ISCC của Inno Setup (đã cài sẵn trên runner Windows) để tạo file Nova-Setup.exe
-        "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\nova-setup.iss
-        
-    - name: Upload Windows Installer
-      uses: actions/upload-artifact@v4 # Tải file .exe lên GitHub Artifacts để người dùng tải về cài đặt
-      with:
-        name: nova-setup-exe
-        path: out\Nova-Setup.exe
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+
+      - name: Compile and package nova.jar
+        shell: cmd
+        run: |
+          mkdir out\production\nova
+          dir /s /b src\*.java > sources.txt
+          :: Biên dịch source code
+          javac --enable-preview --release 21 -encoding UTF-8 -d out\production\nova @sources.txt
+          :: Gói tất cả file .class thành 1 file nova.jar duy nhất, chỉ định file chạy chính là Main
+          jar cfe out\production\nova.jar Main -C out\production\nova .
+
+      - name: Download bundled JRE 21
+        run: |
+          # Tải file nén chứa bản Java thu gọn (JRE 21) cho Windows
+          Invoke-WebRequest -Uri "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.6%2B7/OpenJDK21U-jre_x64_windows_hotspot_21.0.6_7.zip" -OutFile jre.zip
+          # Giải nén
+          Expand-Archive -Path jre.zip -DestinationPath jre_extracted
+          # Đổi tên thư mục thành "jre" và di chuyển ra ngoài để Inno Setup nhặt vào
+          Rename-Item -Path "jre_extracted\jdk-21.0.6+7-jre" -NewName "jre"
+          Move-Item -Path "jre_extracted\jre" -Destination ".\jre"
+
+      - name: Compile Inno Setup Script
+        shell: cmd
+        run: |
+          :: Gọi trình biên dịch ISCC của Inno Setup (đã cài sẵn trên runner Windows) để tạo file Nova-Setup.exe
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\nova-setup.iss
+
+      - name: Upload Windows Installer
+        uses: actions/upload-artifact@v4 # Tải file .exe lên GitHub Artifacts để người dùng tải về cài đặt
+        with:
+          name: nova-setup-exe
+          path: out\Nova-Setup.exe
 
   # ==========================================
   # JOB 4: ĐĂNG TẢI LÊN GITHUB RELEASES (Tự động)
@@ -124,21 +124,26 @@ jobs:
   release:
     needs: [build-vscode-extension, build-windows-installer] # Chỉ chạy khi 2 job trên đã xong
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') # Chỉ kích hoạt job này khi bạn push một Tag (VD: v0.0.3)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Download VS Code Extension
         uses: actions/download-artifact@v4
         with:
           name: nova-lang-vsix
-          
+
       - name: Download Windows Installer
         uses: actions/download-artifact@v4
         with:
           name: nova-setup-exe
-          
+
       - name: Upload to GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: latest
+          name: "Nova Language Latest Build"
+          body: "Bản dựng tự động mới nhất từ nhánh main của ngôn ngữ Nova."
+          draft: false
+          prerelease: true
           files: |
             nova-lang.vsix
             Nova-Setup.exe
