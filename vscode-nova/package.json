@@ -1,6 +1,6 @@
 {
-  "name": "nova-lang",
-  "displayName": "Nova Language Support",
+  "name": "nova-programming-language-support",
+  "displayName": "Nova Programming Language Support",
   "description": "Syntax highlighting and snippets for Nova programming language.",
   "version": "1.0.0",
   "publisher": "TranHoan",
